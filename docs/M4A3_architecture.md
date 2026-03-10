@@ -178,6 +178,20 @@ For each product term row:
 | PRIV007 | — | Access COLREG[378] (write?) |
 | PRIV00F | — | Access PRIVR00F[5] (control?) |
 
+### Confirmed: Full ISC Read/Write Protocol in BSDL
+
+The M4A3 BSDL file contains the **complete IEEE 1532 ISC flow** — we can
+read and write the fuse map directly via OpenOCD without any proprietary tools.
+
+See [`M4A3_ISC_protocol.md`](M4A3_ISC_protocol.md) for the full protocol analysis.
+
+Key findings:
+- **80 rows x 378 bits** = 30,240 main fuses + 1 config row (378 bits)
+- Address register uses **walking-1** pattern (80-bit, MSB first)
+- Read via `ISC_READ` instruction returns 378 bits per row with CRC
+- Complete dump takes ~200ms (2ms per row)
+- EEPROM conditioning patterns in BSDL reveal internal array structure
+
 ### Reverse Engineering Strategy
 
 To decode the fuse map, generate "probe" designs — minimal Verilog with one

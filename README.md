@@ -25,8 +25,8 @@ Programming Lattice M4A3-64/32 CPLD via OpenOCD and FTDI FT2232H (UM232H module)
 
 | File | Description |
 |------|-------------|
-| `go.sh` | JTAG scan — verifies connectivity and reads IDCODE |
-| `um232h_smooker_6010.cfg` | OpenOCD adapter config for FT2232H |
+| `openocd/go.sh` | JTAG scan — verifies connectivity and reads IDCODE |
+| `openocd/um232h_smooker_6010.cfg` | OpenOCD adapter config for FT2232H |
 | `M4A3_64_32_XXVC.bsdl` | BSDL model (3.3V, IEEE 1532 ISC support) |
 | `BSDLM4-643244PinTQFP.BSM` | Boundary Scan Model (5V, Vantis legacy) |
 | `README.txt` | Original notes and links |
@@ -36,6 +36,8 @@ Programming Lattice M4A3-64/32 CPLD via OpenOCD and FTDI FT2232H (UM232H module)
 | File | Description |
 |------|-------------|
 | [`docs/M4A3_architecture.md`](docs/M4A3_architecture.md) | Architecture deep dive, fuse map analysis, reverse engineering strategy |
+| [`docs/M4A3-64_32_specs.md`](docs/M4A3-64_32_specs.md) | DC/timing specs, pinout, max frequency tables |
+| [`docs/M4A3_ISC_protocol.md`](docs/M4A3_ISC_protocol.md) | IEEE 1532 ISC protocol — read/write/erase fuse map via JTAG |
 | [`docs/M4A5-64_32-6JC.pdf`](docs/M4A5-64_32-6JC.pdf) | MACH 4 Family datasheet (62 pages) |
 | [`docs/session_2026_03_10.md`](docs/session_2026_03_10.md) | Session log — initial setup and fuse map discovery |
 
@@ -44,7 +46,7 @@ Programming Lattice M4A3-64/32 CPLD via OpenOCD and FTDI FT2232H (UM232H module)
 ### JTAG Scan (verify connection)
 
 ```bash
-./go.sh
+cd openocd && ./go.sh
 ```
 
 Expected output should show JTAG tap with ID `0x17486157`.
@@ -52,7 +54,7 @@ Expected output should show JTAG tap with ID `0x17486157`.
 ### Program via SVF
 
 ```bash
-openocd -f ./um232h_smooker_6010.cfg \
+openocd -f ./openocd/um232h_smooker_6010.cfg \
     -c "adapter speed 2000; transport select jtag" \
     -c "jtag newtap auto0 tap -irlen 10 -expected-id 0x17486157" \
     -c "init" \
