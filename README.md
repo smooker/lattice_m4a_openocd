@@ -31,6 +31,14 @@ Programming Lattice M4A3-64/32 CPLD via OpenOCD and FTDI FT2232H (UM232H module)
 | `BSDLM4-643244PinTQFP.BSM` | Boundary Scan Model (5V, Vantis legacy) |
 | `README.txt` | Original notes and links |
 
+## Documentation
+
+| File | Description |
+|------|-------------|
+| [`docs/M4A3_architecture.md`](docs/M4A3_architecture.md) | Architecture deep dive, fuse map analysis, reverse engineering strategy |
+| [`docs/M4A5-64_32-6JC.pdf`](docs/M4A5-64_32-6JC.pdf) | MACH 4 Family datasheet (62 pages) |
+| [`docs/session_2026_03_10.md`](docs/session_2026_03_10.md) | Session log — initial setup and fuse map discovery |
+
 ## Usage
 
 ### JTAG Scan (verify connection)
@@ -59,6 +67,17 @@ Generate the SVF file from ispLEVER Classic (JEDEC → SVF export).
 - **OpenOCD** — JTAG interface ([openocd.org](https://openocd.org))
 - **ispLEVER Classic** — Lattice IDE for M4A synthesis + fitting ([archive.org mirror](https://archive.org/download/ispLEVER_Classic_Base_1_8))
 - **BSDL source** — [bsdl.info](https://bsdl.info/details.htm?sid=dbb7399451e3e14088ca59b002289d77)
+
+## Fuse Map Reverse Engineering
+
+The long-term goal is to build an open-source fitter for M4A3, eliminating the
+need for Windows/ispLEVER. Key discovery from BSDL analysis:
+
+- `COLREG[378]` — AND array fuse register, **378 = 384 − 6 clock/input pins**
+- `ROWREG[80]` — row address/control register
+- Strategy: generate probe JEDEC files via ispLEVER, diff to map fuse positions
+
+See [`docs/M4A3_architecture.md`](docs/M4A3_architecture.md) for full analysis.
 
 ## Notes
 
