@@ -1,0 +1,295 @@
+-- Vantis M4-64/32 44 Pin TQFP BSDL description 5.0v version
+--
+-- Written By:  Phil Vu
+-- Date:  December 12, 1997
+-- Version 
+-- 09/04/1998: (Jan Buxton) Updated entity to descriptive, 14-char string.
+-- 10/08/1998: (Jan Buxton) Moved some instructions from private to public.
+-- 03/30/2000 (jkb): Changed port, PIN_MAP_STRING, and BSDL description
+--                   statements from IO array to IO Segment arrays.
+-- 03/31/2000 (jkb): updated Copyright comments.
+-- 04/03/2000 (jkb): Named clock pins "CLK" to pass BSA syntax checker.
+
+-- ****************************************************************
+-- *  Copyright 1999, 2000 Lattice/Vantis Corporation             * 
+-- *  995 Stewart Dr. Sunnyvale, Ca 94088                         *
+-- *  All rights reserved.  No part of this program or publication*
+-- *  may be reproduced, transmitted, transcribed, stored in a    *
+-- *  retrieval system, or translated into any language or        *
+-- *  computer language, in any form or by any means without this *
+-- *  notice appearing within.                                    *
+-- ****************************************************************
+-- *  Lattice/Vantis makes no warranty for the use of this        *
+-- *  product and assumes no responsibility for any errors which  *
+-- *  may appear within.  Neither does it make a commitment to    *
+-- *  update this information.                                    *
+-- ****************************************************************
+-- *  This is the template BSDL file to be used for the purpose   *
+-- *  of verifying the part's compliance with the IEEE standard   *
+-- *  1149.1-1990.                                                *
+-- ****************************************************************
+--
+--  This file has been verified by:
+--     Teradyne VICTORY v 2.10
+--         - Syntax Check using BSA
+--         - Test vector generation using BSA
+--
+--     Hewlett-Packard Boundary-Scan Software
+--         - Syntax Check
+--
+--     Genrad Boundary-Scan Software
+--         - Syntax Check
+--         - Physical Verification
+--  Entity format: Mabcdddeeefggg
+--  a = family (1, 2, 4, 5)
+--  b = A for "A" type parts
+--  c = Vcc level: 5, 3, 2, or 1 for 5.0, 3.3, 2.5, or 1.8 VDC
+--  ddd = number of macrocells, such as 064
+--  eee = number of I/O pins, such as 032
+--  f = package: L, P, T, or B for PLCC, PQFP, TQFP, or BGA
+--  ggg = number of pins, such as 044
+
+entity M4_5064032T044 is
+
+	generic(PHYSICAL_PIN_MAP : string := "TQFP_44pin");
+
+	port    (
+                CLK     : in bit_vector(0 to 1);    --  Clocks/Inputs
+                IOA     : inout bit_vector(0 to 7); --  I/O pins
+                IOB     : inout bit_vector(0 to 7); --  I/O pins
+                IOC     : inout bit_vector(0 to 7); --  I/O pins
+                IOD     : inout bit_vector(0 to 7); --  I/O pins
+
+                TCK, TMS, TDI: in  bit;                   --  JTAG inputs
+                TDO          : out bit;                   --  JTAG outputs
+
+                VCC          : linkage bit_vector(0 to 1);
+                GND          : linkage bit_vector(0 to 3)
+		);
+
+	use STD_1149_1_1990.all;  -- get JTAG definitions and attributes
+
+        attribute PIN_MAP of M4_5064032T044 : entity is PHYSICAL_PIN_MAP;
+
+	constant TQFP_44pin :  PIN_MAP_STRING :=
+          "CLK    : ( 5,27), " &                            -- Dedicated Clock/Input Pins
+
+          "IOA    : (  3,  2,  1, 44, 43, 42, 41, 40)," &   --  I/O A
+          "IOB    : (  8,  9, 10, 11, 12, 13, 14, 15)," &   --  I/O B
+          "IOC    : ( 25, 24, 23, 22, 21, 20, 19, 18)," &   --  I/O C
+          "IOD    : ( 30, 31, 32, 33, 34, 35, 36, 37)," &   --  I/O D
+		
+          "TDI:4, TMS:26, TCK:7, TDO:29, " &  --  JTAG
+
+          "VCC    : (16, 38), " &                          --  POWER
+          "GND    : (6, 17, 28, 39)";                      --  GROUND PINS
+	
+	attribute TAP_SCAN_IN   of TDI : signal is true;
+	attribute TAP_SCAN_MODE of TMS : signal is true;
+	attribute TAP_SCAN_OUT  of TDO : signal is true;
+	attribute TAP_SCAN_CLOCK of TCK: signal is (20.0e6, BOTH);
+
+--  Instruction register definitions
+
+        attribute INSTRUCTION_LENGTH of M4_5064032T044 : entity is 6;
+        attribute INSTRUCTION_OPCODE of M4_5064032T044 : entity is
+		"BYPASS    (111111)," &
+		"EXTEST    (000000)," &
+		"SAMPLE    (000010)," &
+		"IDCODE    (000001)," &
+		"USERCODE  (010000)," &
+		"HIGHZ     (010001)," &
+		"PRIV003   (000011)," &
+		"PRIV004   (000100)," &
+		"PRIV005   (000101)," &
+		"PRIV006   (000110)," &
+		"PRIV007   (000111)," &
+		"PRIV008   (001000)," &
+		"PRIV009   (001001)," &
+		"PRIV00F   (001111)," &
+		"PRIVATE   (110011,110100,110000,110010,100101,101110," &
+                        "100111,101101,001100,001101,001110)";
+
+        attribute INSTRUCTION_CAPTURE of M4_5064032T044 : entity is "000001";
+        attribute INSTRUCTION_DISABLE of M4_5064032T044 : entity is "HIGHZ";
+        attribute INSTRUCTION_PRIVATE of M4_5064032T044 : entity is "PRIVATE";
+
+        attribute IDCODE_REGISTER of M4_5064032T044 : entity is
+               	 "0000" &                      	     	-- version number
+                 "0111010010000000" &                   -- part identification
+                 "00010101011" &                        -- company code
+		 "1";                        		-- mandatory 1
+
+        attribute USERCODE_REGISTER of M4_5064032T044 : entity is
+                	"11111111111111111111111111111111";
+
+        attribute REGISTER_ACCESS of M4_5064032T044 : entity is
+		"BYPASS (BYPASS, HIGHZ, PRIV005, PRIV006, PRIV008, PRIV009)," &
+		"BOUNDARY (EXTEST, SAMPLE)," &
+		"ROWREG[80](PRIV003)," &
+		"COLREG[378](PRIV004, PRIV007)," &
+		"PRIVR00F[5](PRIV00F)";
+
+
+-- **************************************************************
+-- *    BOUNDARY SCAN CELL REGISTER DESCRIPTION
+-- *            THE FIRST CELL (0) IS THE CELL CLOSEST TO TDO
+-- **************************************************************
+	
+        attribute BOUNDARY_CELLS of M4_5064032T044 : entity is "BC_1";
+        attribute BOUNDARY_LENGTH of M4_5064032T044 : entity is 98;
+
+        attribute BOUNDARY_REGISTER of M4_5064032T044 : entity is
+
+	--  1.  The order of the I/O cell is OE - OUTPUT - INPUT
+	--  2.  The output is disabled when a 0 is shifted into the OE cell.
+	--  3.  The pictoral representation of the Boundary scan 
+	--        register is found in VANTIS document no. 93-009-6105-JT-01.
+
+----------------------- Block A -----------------------------
+
+		" 97 (BC_1, IOA(0), INPUT  , X)," &
+		" 96 (BC_1, IOA(0), OUTPUT3, X, 95, 0, Z)," &
+		" 95 (BC_1,      *, CONTROL, 0)," & 
+
+		" 94 (BC_1, IOA(1), INPUT  , X)," &
+		" 93 (BC_1, IOA(1), OUTPUT3, X, 92, 0, Z)," &
+		" 92 (BC_1,      *, CONTROL, 0)," & 
+
+		" 91 (BC_1, IOA(2), INPUT  , X)," &
+		" 90 (BC_1, IOA(2), OUTPUT3, X, 89, 0, Z)," &
+		" 89 (BC_1,      *, CONTROL, 0)," & 
+
+		" 88 (BC_1, IOA(3), INPUT  , X)," &
+		" 87 (BC_1, IOA(3), OUTPUT3, X, 86, 0, Z)," &
+		" 86 (BC_1,      *, CONTROL, 0)," & 
+
+		" 85 (BC_1, IOA(4), INPUT  , X)," &
+		" 84 (BC_1, IOA(4), OUTPUT3, X, 83, 0, Z)," &
+		" 83 (BC_1,      *, CONTROL, 0)," & 
+
+		" 82 (BC_1, IOA(5), INPUT  , X)," &
+		" 81 (BC_1, IOA(5), OUTPUT3, X, 80, 0, Z)," &
+		" 80 (BC_1,      *, CONTROL, 0)," & 
+
+		" 79 (BC_1, IOA(6), INPUT  , X)," &
+		" 78 (BC_1, IOA(6), OUTPUT3, X, 77, 0, Z)," &
+		" 77 (BC_1,      *, CONTROL, 0)," & 
+
+		" 76 (BC_1, IOA(7), INPUT  , X)," &
+		" 75 (BC_1, IOA(7), OUTPUT3, X, 74, 0, Z)," &
+		" 74 (BC_1,      *, CONTROL, 0)," & 
+
+----------------------- Clock 0 -----------------------------
+
+		" 73 (BC_1, CLK(0), INPUT, X)," &   
+
+----------------------- Block B -----------------------------
+
+		" 72 (BC_1, IOB(0), INPUT  , X)," &
+		" 71 (BC_1, IOB(0), OUTPUT3, X, 70, 0, Z)," &
+		" 70 (BC_1,      *, CONTROL, 0)," & 
+	
+		" 69 (BC_1, IOB(1), INPUT  , X)," &
+		" 68 (BC_1, IOB(1), OUTPUT3, X, 67, 0, Z)," &
+		" 67 (BC_1,      *, CONTROL, 0)," & 
+
+		" 66 (BC_1, IOB(2), INPUT  , X)," &
+		" 65 (BC_1, IOB(2), OUTPUT3, X, 64, 0, Z)," &
+		" 64 (BC_1,       *, CONTROL, 0)," &
+
+		" 63 (BC_1, IOB(3), INPUT  , X)," &
+		" 62 (BC_1, IOB(3), OUTPUT3, X, 61, 0, Z)," &
+		" 61 (BC_1,      *, CONTROL , 0)," &
+
+		" 60 (BC_1, IOB(4), INPUT  , X)," &
+		" 59 (BC_1, IOB(4), OUTPUT3, X, 58, 0, Z)," &
+		" 58 (BC_1,      *, CONTROL , 0)," &
+
+		" 57 (BC_1, IOB(5), INPUT  , X)," &
+		" 56 (BC_1, IOB(5), OUTPUT3, X, 55, 0, Z)," &
+		" 55 (BC_1,      *, CONTROL , 0)," &
+
+		" 54 (BC_1, IOB(6), INPUT  , X),"  &
+		" 53 (BC_1, IOB(6), OUTPUT3, X,  52, 0, Z)," &
+		" 52 (BC_1,      *, CONTROL , 0)," &
+
+		" 51 (BC_1, IOB(7), INPUT  , X),"  &
+		" 50 (BC_1, IOB(7), OUTPUT3, X,  49, 0, Z)," &
+		" 49 (BC_1,      *, CONTROL , 0)," &
+
+----------------------- Block C -----------------------------
+
+		" 48 (BC_1, IOC(0), INPUT  , X)," &
+		" 47 (BC_1, IOC(0), OUTPUT3, X, 46, 0, Z)," &
+		" 46 (BC_1,      *, CONTROL , 0)," &
+
+		" 45 (BC_1, IOC(1), INPUT  , X)," &
+		" 44 (BC_1, IOC(1), OUTPUT3, X, 43, 0, Z)," &
+		" 43 (BC_1,      *, CONTROL , 0)," &
+
+		" 42 (BC_1, IOC(2), INPUT  , X)," &
+		" 41 (BC_1, IOC(2), OUTPUT3, X, 40, 0, Z)," &
+		" 40 (BC_1,      *, CONTROL , 0)," &
+
+		" 39 (BC_1, IOC(3), INPUT  , X)," &
+		" 38 (BC_1, IOC(3), OUTPUT3, X, 37, 0, Z)," &
+		" 37 (BC_1,      *, CONTROL , 0)," &
+
+		" 36 (BC_1, IOC(4), INPUT  , X)," &
+		" 35 (BC_1, IOC(4), OUTPUT3, X, 34, 0, Z)," &
+		" 34 (BC_1,      *, CONTROL , 0)," &
+
+		" 33 (BC_1, IOC(5), INPUT  , X)," &
+		" 32 (BC_1, IOC(5), OUTPUT3, X, 31, 0, Z)," &
+		" 31 (BC_1,      *, CONTROL , 0)," &
+
+		" 30 (BC_1, IOC(6), INPUT  , X)," &
+		" 29 (BC_1, IOC(6), OUTPUT3, X, 28, 0, Z)," &
+		" 28 (BC_1,      *, CONTROL , 0)," &
+
+		" 27 (BC_1, IOC(7), INPUT  , X)," &
+		" 26 (BC_1, IOC(7), OUTPUT3, X, 25, 0, Z)," &
+		" 25 (BC_1,      *, CONTROL , 0)," &
+
+----------------------- Clock 1 -----------------------------
+
+		" 24 (BC_1, CLK(1), INPUT, X)," &   
+
+----------------------- Block D -----------------------------
+
+		" 23 (BC_1, IOD(0), INPUT  , X)," &
+		" 22 (BC_1, IOD(0), OUTPUT3, X, 21, 0, Z)," & 
+		" 21 (BC_1,      *, CONTROL , 0)," &
+
+		" 20 (BC_1, IOD(1), INPUT  , X)," &
+		" 19 (BC_1, IOD(1), OUTPUT3, X, 18, 0, Z)," & 
+		" 18 (BC_1,      *, CONTROL , 0)," &
+
+		" 17 (BC_1, IOD(2), INPUT  , X)," &
+		" 16 (BC_1, IOD(2), OUTPUT3, X, 15, 0, Z)," & 
+		" 15 (BC_1,      *, CONTROL , 0)," &
+
+		" 14 (BC_1, IOD(3), INPUT  , X)," &
+		" 13 (BC_1, IOD(3), OUTPUT3, X, 12, 0, Z)," & 
+		" 12 (BC_1,      *, CONTROL , 0)," &
+
+		" 11 (BC_1, IOD(4), INPUT  , X)," &
+		" 10 (BC_1, IOD(4), OUTPUT3, X, 9, 0, Z)," & 
+		"  9 (BC_1,      *, CONTROL , 0)," &
+
+		"  8 (BC_1, IOD(5), INPUT  , X)," &
+		"  7 (BC_1, IOD(5), OUTPUT3, X, 6, 0, Z)," &
+		"  6 (BC_1,      *, CONTROL , 0)," &
+
+		"  5 (BC_1, IOD(6), INPUT  , X)," &
+		"  4 (BC_1, IOD(6), OUTPUT3, X, 3, 0, Z)," &
+		"  3 (BC_1,      *, CONTROL , 0)," &
+
+		"  2 (BC_1, IOD(7), INPUT  , X)," &
+		"  1 (BC_1, IOD(7), OUTPUT3, X, 0, 0, Z)," &
+		"  0 (BC_1,      *, CONTROL , 0)";
+
+end M4_5064032T044;
+
+

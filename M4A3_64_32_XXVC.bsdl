@@ -1,0 +1,1081 @@
+-- ********************************************************************
+-- * M4A3-64/32 44 Pin TQFP 3.3V BSDL Model                           *
+-- *                                                                  *
+-- * File Version:      V2.00                                         *
+-- * File Date:         Dec. 7, 2001                                  *
+-- *                                                                  *
+-- * Standard Test Access Port and Boundary-Scan Architecture         *
+-- * VHDL Description File                                            *
+-- *                                                                  *
+-- * This BSDL can be used for Boundary-Scan Test as well as          *
+-- * ISC 1532 Programming support.                                    *
+-- *                                                                  *
+-- * This BSDL file is created according to:                          *
+-- * - IEEE 1532 2001 spec.                                           *
+-- * - IEEE 1149.1 1994 spec.                                         *
+-- *                                                                  *
+-- * This BSDL file has been syntax checked with:                     *
+-- * - Lattice BSDL Syntax Checker                                    *
+-- * - Agilent BSDL Syntax Checker                                    *
+-- *                                                                  *
+-- *  Copyright 2000, 2001 Lattice Semiconductor Corporation          *
+-- *  5555 NE Moore Ct., Hillsboro, OR 97124                          *
+-- *  All rights reserved.  No part of this program or publication    *
+-- *  may be reproduced, transmitted, transcribed, stored in a        *
+-- *  retrieval system, or translated into any language or            *
+-- *  computer language, in any form or by any means without this     *
+-- *  notice appearing within.                                        *
+-- ********************************************************************
+-- *                                                                  *
+-- *                           IMPORTANT                              *
+-- *                                                                  *
+-- * The following is a BSDL file that tests all of the I/O pins      *
+-- * as bidirectional pins.  The functionality of the BSCAN register  *
+-- * for this device is independent of the pattern programmed         *
+-- * into the device.  An additional programming step is not          *
+-- * required to configure the I/O pins prior to BSCAN test.          *
+-- *                                                                  *
+-- * This file contains additional information that may cause a BSDL  *
+-- * parser to reject or error if your parser does not contain the    *
+-- * 1532 library. BSDL files without ISC extensions are available    *
+-- * on the Lattice website at www.latticesemi.com.                   *
+-- *                                                                  *
+-- * For Further assistance, please contact Tech Support at           *
+-- *       1-800-LATTICE or techsupport@latticesemi.com.              *
+-- ********************************************************************
+-- *                       Revision History                           *
+-- *                                                                  *
+-- * Rev 2.00: 12/07/2001                                             *
+-- *  - Changed entity name from iM4A3_64_32_XXVC to M4A3_64_32_XXVC. *
+-- *    Edit file column length to 72 characters max.                 *
+-- *    Updated Header.                                               *
+-- * Rev 1.7: 10/22/2001                                              *
+-- *  - Changed ISC_READ in flow_verify and flow_read from WAIT TCK 1 *
+-- *    to WAIT TCK 3, 2.0E-3.                                        *
+-- * Rev 1.6: 10/03/2001                                              *
+-- *  - Changed USERCODE_TDO array to USERCODE.                       *
+-- * Rev 1.5: 08/30/2001                                              *
+-- *  - Updated entity name.                                          *
+-- * Rev 1.4: 08/02/2001                                              *
+-- *  - Added IEEE 1532 Extension.                                    *
+-- * Rev 1.3, 06/07/2001                                              *
+-- *  - Add Lattice phone number and email address.                   *
+-- * Rev 1.2: 04/03/2000                                              *
+-- *  - Named clock pins "CLK" to pass BSA syntax checker.            *
+-- * Rev 1.1: 03/31/2000                                              *
+-- *  - Updated Copyright comments.                                   *
+-- * Rev 1.0: 03/30/2000                                              *
+-- *  - Changed port, PIN_MAP_STRING, and BSDL description statements *
+-- *    from IO array to IO Segment arrays.                           *
+-- *                                                                  *
+-- ********************************************************************
+--
+--  Entity format: iMabc_ddd_eee_XXff
+--  a = family (1, 2, 4, 5)
+--  b = A for "A" type parts
+--  c = Vcc level: 5, 3, 2, or 1 for 5.0, 3.3, 2.5, or 1.8 VDC
+--  ddd = number of macrocells, such as 064
+--  eee = number of I/O pins, such as 032
+--  ff = package: JC, YC, VC, or AC for PLCC, PQFP, TQFP, or BGA
+
+entity M4A3_64_32_XXVC is
+
+    generic(PHYSICAL_PIN_MAP : string := "TQFP_44pin");
+
+    port    (
+                CLK     : in bit_vector(0 to 1);    --  Clocks
+                IOA     : inout bit_vector(0 to 7); --  I/O pins
+                IOB     : inout bit_vector(0 to 7); --  I/O pins
+                IOC     : inout bit_vector(0 to 7); --  I/O pins
+                IOD     : inout bit_vector(0 to 7); --  I/O pins
+
+                TCK, TMS, TDI: in  bit;             --  JTAG inputs
+                TDO          : out bit;             --  JTAG outputs
+
+                VCC          : linkage bit_vector(0 to 1);
+                GND          : linkage bit_vector(0 to 3)
+        );
+
+    use STD_1149_1_1994.all; -- Standard 'use' statement
+    use STD_1532_2001.all;   -- BSDL Extension for ISC devices
+
+    attribute COMPONENT_CONFORMANCE of M4A3_64_32_XXVC : entity is
+       "STD_1149_1_1993";
+
+    attribute PIN_MAP of M4A3_64_32_XXVC : entity is PHYSICAL_PIN_MAP;
+
+    constant TQFP_44pin :  PIN_MAP_STRING :=
+
+          "CLK    : ( 5, 27),                    "&  --   Clock
+
+          "IOA    : (  3,  2,  1, 44, 43, 42, 41, 40), "&   --  I/O A
+          "IOB    : (  8,  9, 10, 11, 12, 13, 14, 15), "&   --  I/O B
+          "IOC    : ( 25, 24, 23, 22, 21, 20, 19, 18), "&   --  I/O C
+          "IOD    : ( 30, 31, 32, 33, 34, 35, 36, 37), "&   --  I/O D
+
+          "TDI:4, TMS:26, TCK:7, TDO:29,  "&   --  JTAG
+
+          "VCC    : (16, 38),             "&   --  POWER
+          "GND    : (6, 17, 28, 39)      ";    --  GROUND PINS
+    
+    attribute TAP_SCAN_IN   of TDI : signal is true;
+    attribute TAP_SCAN_MODE of TMS : signal is true;
+    attribute TAP_SCAN_OUT  of TDO : signal is true;
+    attribute TAP_SCAN_CLOCK of TCK: signal is (20.0e6, BOTH);
+
+--  Instruction register definitions
+
+    attribute INSTRUCTION_LENGTH of M4A3_64_32_XXVC : entity is 6;
+    attribute INSTRUCTION_OPCODE of M4A3_64_32_XXVC : entity is
+        "BYPASS    (111111), "&
+        "EXTEST    (000000), "&
+        "SAMPLE    (000010), "&
+        "IDCODE    (000001), "&
+        "USERCODE  (010000), "&
+        "HIGHZ     (010001), "&
+-- ISC Instructions
+        "ISC_ADDRESS_SHIFT    (000011), "&
+        "ISC_DATA_SHIFT       (000100), "&
+        "ISC_ERASE            (000101), "&
+        "ISC_PROGRAM          (000110), "&
+        "ISC_READ             (000111), "&
+        "ISC_PROGRAM_SECURITY (001000), "&
+        "ISC_ENABLE           (001111), "&
+        "ISC_DISABLE          (111111), "&
+        "ISC_NOOP             (111111), "&
+-- Private Instructions
+        "PRIV009   (001001), "&
+        "PRIVATE   (110011,110100,110000,110010,100101,101110, "&
+                   "100111,101101,001100,001101,001110)";
+
+  attribute INSTRUCTION_CAPTURE of M4A3_64_32_XXVC : 
+                                      entity is "000001";
+  attribute INSTRUCTION_PRIVATE of M4A3_64_32_XXVC : 
+                                      entity is "PRIVATE";
+
+    attribute IDCODE_REGISTER of M4A3_64_32_XXVC : entity is
+        "0001"&                 -- version number (1)
+        "0111010010000110"&     -- part identification (7486)
+        "00010101011"&          -- company code (157)
+        "1";                    -- mandatory 1
+
+    attribute USERCODE_REGISTER of M4A3_64_32_XXVC : entity is
+                "11111111111111111111111111111111";
+
+    attribute REGISTER_ACCESS of M4A3_64_32_XXVC : entity is
+      "BYPASS          (BYPASS, HIGHZ, PRIV009), "&
+      "ISC_DEFAULT[1]  (ISC_PROGRAM, ISC_DISABLE, ISC_NOOP, "&
+                       "ISC_ERASE, ISC_PROGRAM_SECURITY), "&
+      "BOUNDARY        (EXTEST, SAMPLE), "&
+      "ISC_ADDRESS[80] (ISC_ADDRESS_SHIFT), "&
+      "ISC_DATA[378]   (ISC_DATA_SHIFT), "&
+      "ISC_RDATA[378]  (ISC_READ), "&
+      "DEVICE_ID       (USERCODE, IDCODE), "&
+      "ISC_CONFIG[5]   (ISC_ENABLE)";
+
+-- **************************************************************
+-- *    BOUNDARY SCAN CELL REGISTER DESCRIPTION
+-- *            THE FIRST CELL (0) IS THE CELL CLOSEST TO TDO
+-- **************************************************************
+    attribute BOUNDARY_LENGTH of M4A3_64_32_XXVC : entity is 98;
+    attribute BOUNDARY_REGISTER of M4A3_64_32_XXVC : entity is
+
+    --  1. The order of the I/O cell is OE - OUTPUT - INPUT
+    --  2. The output is disabled when a 0 is shifted into the OE cell.
+    --  3. The pictoral representation of the Boundary scan 
+    --     register is found in VANTIS document no. 93-009-6105-JT-01.
+
+----------------------- Block A -----------------------------
+
+        " 97 (BC_1, IOA(0), INPUT  , X), "&
+        " 96 (BC_1, IOA(0), OUTPUT3, X, 95, 0, Z), "&
+        " 95 (BC_1,      *, CONTROL, 0), "& 
+
+        " 94 (BC_1, IOA(1), INPUT  , X), "&
+        " 93 (BC_1, IOA(1), OUTPUT3, X, 92, 0, Z), "&
+        " 92 (BC_1,      *, CONTROL, 0), "& 
+
+        " 91 (BC_1, IOA(2), INPUT  , X), "&
+        " 90 (BC_1, IOA(2), OUTPUT3, X, 89, 0, Z), "&
+        " 89 (BC_1,      *, CONTROL, 0), "& 
+
+        " 88 (BC_1, IOA(3), INPUT  , X), "&
+        " 87 (BC_1, IOA(3), OUTPUT3, X, 86, 0, Z), "&
+        " 86 (BC_1,      *, CONTROL, 0), "& 
+
+        " 85 (BC_1, IOA(4), INPUT  , X), "&
+        " 84 (BC_1, IOA(4), OUTPUT3, X, 83, 0, Z), "&
+        " 83 (BC_1,      *, CONTROL, 0), "& 
+
+        " 82 (BC_1, IOA(5), INPUT  , X), "&
+        " 81 (BC_1, IOA(5), OUTPUT3, X, 80, 0, Z), "&
+        " 80 (BC_1,      *, CONTROL, 0), "& 
+
+        " 79 (BC_1, IOA(6), INPUT  , X), "&
+        " 78 (BC_1, IOA(6), OUTPUT3, X, 77, 0, Z), "&
+        " 77 (BC_1,      *, CONTROL, 0), "& 
+
+        " 76 (BC_1, IOA(7), INPUT  , X), "&
+        " 75 (BC_1, IOA(7), OUTPUT3, X, 74, 0, Z), "&
+        " 74 (BC_1,      *, CONTROL, 0), "& 
+
+----------------------- Clock 0 -----------------------------
+
+        " 73 (BC_1, CLK(0), INPUT, X), "&   
+
+----------------------- Block B -----------------------------
+
+        " 72 (BC_1, IOB(0), INPUT  , X), "&
+        " 71 (BC_1, IOB(0), OUTPUT3, X, 70, 0, Z), "&
+        " 70 (BC_1,      *, CONTROL, 0), "& 
+    
+        " 69 (BC_1, IOB(1), INPUT  , X), "&
+        " 68 (BC_1, IOB(1), OUTPUT3, X, 67, 0, Z), "&
+        " 67 (BC_1,      *, CONTROL, 0), "& 
+
+        " 66 (BC_1, IOB(2), INPUT  , X), "&
+        " 65 (BC_1, IOB(2), OUTPUT3, X, 64, 0, Z), "&
+        " 64 (BC_1,       *, CONTROL, 0), "&
+
+        " 63 (BC_1, IOB(3), INPUT  , X), "&
+        " 62 (BC_1, IOB(3), OUTPUT3, X, 61, 0, Z), "&
+        " 61 (BC_1,      *, CONTROL , 0), "&
+
+        " 60 (BC_1, IOB(4), INPUT  , X), "&
+        " 59 (BC_1, IOB(4), OUTPUT3, X, 58, 0, Z), "&
+        " 58 (BC_1,      *, CONTROL , 0), "&
+
+        " 57 (BC_1, IOB(5), INPUT  , X), "&
+        " 56 (BC_1, IOB(5), OUTPUT3, X, 55, 0, Z), "&
+        " 55 (BC_1,      *, CONTROL , 0), "&
+
+        " 54 (BC_1, IOB(6), INPUT  , X),"  &
+        " 53 (BC_1, IOB(6), OUTPUT3, X,  52, 0, Z), "&
+        " 52 (BC_1,      *, CONTROL , 0), "&
+
+        " 51 (BC_1, IOB(7), INPUT  , X),"  &
+        " 50 (BC_1, IOB(7), OUTPUT3, X,  49, 0, Z), "&
+        " 49 (BC_1,      *, CONTROL , 0), "&
+
+----------------------- Block C -----------------------------
+
+        " 48 (BC_1, IOC(0), INPUT  , X), "&
+        " 47 (BC_1, IOC(0), OUTPUT3, X, 46, 0, Z), "&
+        " 46 (BC_1,      *, CONTROL , 0), "&
+
+        " 45 (BC_1, IOC(1), INPUT  , X), "&
+        " 44 (BC_1, IOC(1), OUTPUT3, X, 43, 0, Z), "&
+        " 43 (BC_1,      *, CONTROL , 0), "&
+
+        " 42 (BC_1, IOC(2), INPUT  , X), "&
+        " 41 (BC_1, IOC(2), OUTPUT3, X, 40, 0, Z), "&
+        " 40 (BC_1,      *, CONTROL , 0), "&
+
+        " 39 (BC_1, IOC(3), INPUT  , X), "&
+        " 38 (BC_1, IOC(3), OUTPUT3, X, 37, 0, Z), "&
+        " 37 (BC_1,      *, CONTROL , 0), "&
+
+        " 36 (BC_1, IOC(4), INPUT  , X), "&
+        " 35 (BC_1, IOC(4), OUTPUT3, X, 34, 0, Z), "&
+        " 34 (BC_1,      *, CONTROL , 0), "&
+
+        " 33 (BC_1, IOC(5), INPUT  , X), "&
+        " 32 (BC_1, IOC(5), OUTPUT3, X, 31, 0, Z), "&
+        " 31 (BC_1,      *, CONTROL , 0), "&
+
+        " 30 (BC_1, IOC(6), INPUT  , X), "&
+        " 29 (BC_1, IOC(6), OUTPUT3, X, 28, 0, Z), "&
+        " 28 (BC_1,      *, CONTROL , 0), "&
+
+        " 27 (BC_1, IOC(7), INPUT  , X), "&
+        " 26 (BC_1, IOC(7), OUTPUT3, X, 25, 0, Z), "&
+        " 25 (BC_1,      *, CONTROL , 0), "&
+
+----------------------- Clock 1 -----------------------------
+
+        " 24 (BC_1, CLK(1), INPUT, X), "&   
+
+----------------------- Block D -----------------------------
+
+        " 23 (BC_1, IOD(0), INPUT  , X), "&
+        " 22 (BC_1, IOD(0), OUTPUT3, X, 21, 0, Z), "& 
+        " 21 (BC_1,      *, CONTROL , 0), "&
+
+        " 20 (BC_1, IOD(1), INPUT  , X), "&
+        " 19 (BC_1, IOD(1), OUTPUT3, X, 18, 0, Z), "& 
+        " 18 (BC_1,      *, CONTROL , 0), "&
+
+        " 17 (BC_1, IOD(2), INPUT  , X), "&
+        " 16 (BC_1, IOD(2), OUTPUT3, X, 15, 0, Z), "& 
+        " 15 (BC_1,      *, CONTROL , 0), "&
+
+        " 14 (BC_1, IOD(3), INPUT  , X), "&
+        " 13 (BC_1, IOD(3), OUTPUT3, X, 12, 0, Z), "& 
+        " 12 (BC_1,      *, CONTROL , 0), "&
+
+        " 11 (BC_1, IOD(4), INPUT  , X), "&
+        " 10 (BC_1, IOD(4), OUTPUT3, X, 9, 0, Z), "& 
+        "  9 (BC_1,      *, CONTROL , 0), "&
+
+        "  8 (BC_1, IOD(5), INPUT  , X), "&
+        "  7 (BC_1, IOD(5), OUTPUT3, X, 6, 0, Z), "&
+        "  6 (BC_1,      *, CONTROL , 0), "&
+
+        "  5 (BC_1, IOD(6), INPUT  , X), "&
+        "  4 (BC_1, IOD(6), OUTPUT3, X, 3, 0, Z), "&
+        "  3 (BC_1,      *, CONTROL , 0), "&
+
+        "  2 (BC_1, IOD(7), INPUT  , X), "&
+        "  1 (BC_1, IOD(7), OUTPUT3, X, 0, 0, Z), "&
+        "  0 (BC_1,      *, CONTROL , 0)";
+
+-- *******************************************************************
+-- *                    IEEE 1532 EXTENSION INFORMATION              *
+-- *******************************************************************
+
+attribute ISC_PIN_BEHAVIOR of M4A3_64_32_XXVC : entity is
+    "CLAMP"; -- clamp behavior
+
+attribute ISC_STATUS of M4A3_64_32_XXVC : entity is
+    "NOT IMPLEMENTED";
+
+attribute ISC_BLANK_USERCODE of M4A3_64_32_XXVC : entity is
+    "11111111111111111111111111111111";
+
+attribute ISC_FLOW of M4A3_64_32_XXVC : entity is
+  "flow_verify(idcode) "&
+    "initialize "&
+      "(IDCODE          WAIT TCK 3, 2.0E-3 32:17486157*0FFFFFFF), "&
+
+  "flow_enable "&
+    "initialize "&
+      "(ISC_ENABLE 5:8  WAIT TCK 3), "&
+
+  "flow_bypass "&
+    "initialize "&
+      "(BYPASS          WAIT TCK 1), "&
+
+  "flow_erase "&
+    "initialize "&
+      "(ISC_ERASE       WAIT TCK 3, 100.0e-3), "&
+
+  "flow_erase_program "&
+    "initialize "&
+      "(ISC_ADDRESS_SHIFT 80:0  WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:0  WAIT TCK 1) "&
+      "(ISC_PROGRAM             WAIT TCK 3, 100.0e-3) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr=80000000000000000000 WAIT TCK 1)"&
+    "repeat 66 "&
+      "(ISC_DATA_SHIFT 378:3FFDFFBFF7FEFFDFFBFF7FEFFF7FEFFDFFBFF7FEFF"&
+      "DFFBFFFFEFFDFFBFF7FEFFDFFBFF7FFBFF7FEFFDFFBFF7FEFFDFF  "&
+      "WAIT TCK 1)"&
+      "(ISC_PROGRAM                   WAIT TCK 3, 50.0e-3) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+    "terminate "&
+      "(ISC_DATA_SHIFT 378:$epgm1=0841082104208410821042021042084108"&
+      "2104208410800042084108210420841082101082104208410821042084000"&
+      "  WAIT TCK 1) "&
+      "(ISC_PROGRAM                   WAIT TCK 3, 50.0e-3) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$epgm1   WAIT TCK 1) "&
+      "(ISC_PROGRAM                   WAIT TCK 3, 50.0e-3) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$epgm1   WAIT TCK 1) "&
+      "(ISC_PROGRAM                   WAIT TCK 3, 50.0e-3) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT 378:$epgm2=0841082104208410821042021042084108"&
+      "2104208410820242084108210420841082101082104208410821042084101"&
+      "  WAIT TCK 1) "&
+      "(ISC_PROGRAM                   WAIT TCK 3, 50.0e-3) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$epgm1   WAIT TCK 1) "&
+      "(ISC_PROGRAM                   WAIT TCK 3, 50.0e-3) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$epgm1   WAIT TCK 1) "&
+      "(ISC_PROGRAM                   WAIT TCK 3, 50.0e-3) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$epgm1   WAIT TCK 1) "&
+      "(ISC_PROGRAM                   WAIT TCK 3, 50.0e-3) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$epgm2   WAIT TCK 1) "&
+      "(ISC_PROGRAM                   WAIT TCK 3, 50.0e-3) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$epgm1   WAIT TCK 1) "&
+      "(ISC_PROGRAM                   WAIT TCK 3, 50.0e-3) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$epgm2   WAIT TCK 1) "&
+      "(ISC_PROGRAM                   WAIT TCK 3, 50.0e-3) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$epgm1   WAIT TCK 1) "&
+      "(ISC_PROGRAM                   WAIT TCK 3, 50.0e-3) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$epgm2   WAIT TCK 1) "&
+      "(ISC_PROGRAM                   WAIT TCK 3, 50.0e-3) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$epgm1   WAIT TCK 1) "&
+      "(ISC_PROGRAM                   WAIT TCK 3, 50.0e-3) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT 378:08410821042084108210420210420841082104208"&
+      "410800042084108210420841082101082104208410821042084001 "&  
+      " WAIT TCK 1)"&
+      "(ISC_PROGRAM                   WAIT TCK 3, 50.0e-3) "&
+      "(ISC_ADDRESS_SHIFT 80:0        WAIT TCK 1) "&
+      "(ISC_ENABLE         5:9        WAIT TCK 3) "&
+      "(ISC_DATA_SHIFT 378:200200400801002004008018008010020040080100"&
+      "2004010010020040080100200400C004008010020040080100200  "&
+      " WAIT TCK 1)"&
+      "(ISC_PROGRAM                   WAIT TCK 3, 50.0e-3) "&
+      "(ISC_ENABLE         5:8        WAIT TCK 3), "&
+
+  "flow_preload "&
+    "initialize "&
+      "(SAMPLE            98:0  WAIT TCK 1), "&
+
+  "flow_program_init "&
+    "initialize "&
+      "(ISC_ADDRESS_SHIFT 80:0  WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:0  WAIT TCK 1) "&
+      "(ISC_PROGRAM             WAIT TCK 3, 100.0e-3), "&
+
+  "flow_program(array) "&
+    "initialize "&
+      "(ISC_ADDRESS_SHIFT 80:$addr=80000000000000000000 WAIT TCK 1)"&
+    "repeat 80 "&
+      "(ISC_DATA_SHIFT   378:?  WAIT TCK 1) "&
+      "(ISC_PROGRAM             WAIT TCK 3, 50.0e-3) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+    "terminate "&
+      "(ISC_ADDRESS_SHIFT 80:0  WAIT TCK 1) "&
+      "(ISC_ENABLE         5:9  WAIT TCK 3) "&
+      "(ISC_DATA_SHIFT   378:?  WAIT TCK 1) "&
+      "(ISC_PROGRAM             WAIT TCK 3, 50.0e-3) "&
+      "(ISC_ENABLE         5:8  WAIT TCK 3), "&
+
+  "flow_read_init "&
+    "initialize "&
+      "(ISC_ADDRESS_SHIFT 80:0  WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:0  WAIT TCK 1), "&
+
+  "flow_verify(array_tdo) "&
+    "initialize "&
+      "(ISC_ADDRESS_SHIFT 80:$addr=80000000000000000000 WAIT TCK 1)"&
+    "repeat 1 "&
+      "(ISC_DATA_SHIFT  378:$adsel=2000000000000000000000000000000000"&
+      "0000000000000000000000000000000000000000000000000000000000000"&
+      "  WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1)" &
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:?:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ WAIT TCK 3, 2.0E-3 378:?*$em1=0000841082104208410821"&
+      "04202104208410821042084108000420841082104208410821010821042084"&
+      "10821042084:CRC)"&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:?*$em1:CRC)"&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:?*$em1:CRC)"&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ WAIT TCK 3, 2.0E-3 378:?*$em2=2020841082104208410821"&
+      "04202104208410821042084109010420841082104208410821010821042084"&
+      "10821042084:CRC)"&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:?*$em1:CRC)"&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:?*$em1:CRC)"&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:?*$em1:CRC)"&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:?*$em2:CRC)"&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:?*$em1:CRC)"&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:?*$em2:CRC)"&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:?*$em1:CRC)"&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:?*$em2:CRC)"&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:?*$em1:CRC)"&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ WAIT TCK 3, 2.0E-3 378:?*200084108210420841082104202"&
+      "10420841082104208410800042084108210420841082101082104208410821"&
+      "042084:CRC)"&
+      "terminate "&
+      "(ISC_ADDRESS_SHIFT 80:0        WAIT TCK 1) "&
+      "(ISC_ENABLE         5:9        WAIT TCK 3) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ WAIT TCK 3, 2.0E-3 378:?*2010020040080100200400800C0"&
+      "08010020040080100200200801002004008010020040060040080100200400"&
+      "801001:CRC)"&
+      "(ISC_ENABLE         5:8        WAIT TCK 3), "&
+
+  "flow_verify(usercode) "&
+    "initialize "&
+      "(USERCODE  WAIT TCK 3, 2.0E-3  32:?), "&
+
+  "flow_read(array_tdo) Unprocessed "&
+    "initialize "&
+      "(ISC_ADDRESS_SHIFT 80:$addr=80000000000000000000 WAIT TCK 1)"&
+    "repeat 1 "&
+      "(ISC_DATA_SHIFT  378:$adsel=2000000000000000000000000000000000"&
+      "0000000000000000000000000000000000000000000000000000000000000"&
+      "  WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1)" &
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, 2.0E-3 378:!:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ WAIT TCK 3, 2.0E-3 378:*!$em1=0000841082104208410821"&
+      "04202104208410821042084108000420841082104208410821010821042084"&
+      "10821042084:CRC)"&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:*!$em1:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:*!$em1:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ WAIT TCK 3, 2.0E-3 378:*!$em2=2020841082104208410821"&
+      "04202104208410821042084109010420841082104208410821010821042084"&
+      "10821042084:CRC)"&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:*!$em1:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:*!$em1:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:*!$em1:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:*!$em2:CRC)" &
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:*!$em1:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:*!$em2:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:*!$em1:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:*!$em2:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ                      WAIT TCK 3, "&
+      "2.0E-3 378:*!$em1:CRC) "&
+      "(ISC_ADDRESS_SHIFT 80:$addr>>1 WAIT TCK 1) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ WAIT TCK 3, 2.0E-3 378:*!20008410821042084108210420"&
+      "2104208410821042084108000420841082104208410821010821042084108"&
+      "21042084:CRC)"&
+    "terminate "&
+      "(ISC_ADDRESS_SHIFT 80:0        WAIT TCK 1) "&
+      "(ISC_ENABLE         5:9        WAIT TCK 3) "&
+      "(ISC_DATA_SHIFT   378:$adsel   WAIT TCK 1) "&
+      "(ISC_READ WAIT TCK 3, 2.0E-3 378:*!2010020040080100200400800C0"&
+      "08010020040080100200200801002004008010020040060040080100200400"&
+      "801001:CRC)"&
+      "(ISC_ENABLE         5:8        WAIT TCK 3), "&
+
+  "flow_read(usercode) Unprocessed "&
+    "initialize "&
+      "(USERCODE   WAIT TCK 3, 2.0E-3 32:!), "&
+
+  "flow_program_done "&
+    "initialize "&
+      "(ISC_NOOP  WAIT TCK 1), "&
+
+  "flow_program_security "&
+    "initialize "&
+      "(ISC_PROGRAM_SECURITY  WAIT TCK 3, 50.0e-3), "&
+
+  "flow_disable "&
+    "initialize "&
+      "(ISC_ENABLE       5:C  WAIT TCK 3) "&
+      "(ISC_DISABLE           WAIT TCK 3)";
+
+attribute ISC_PROCEDURE of M4A3_64_32_XXVC : entity is
+  "proc_verify(idcode)     = (flow_verify(idcode)), "&
+  "proc_enable             = (flow_enable), "& 
+  "proc_disable            = (flow_disable), "&
+  "proc_program_init       = (flow_program_init), "&
+  "proc_program(array)     = (flow_program(array)), "&
+  "proc_read_init          = (flow_read_init), "&
+  "proc_verify(array)      = (flow_verify(array_tdo)), "&
+  "proc_verify(usercode)   = (flow_verify(usercode)), "&
+  "proc_erase              = (flow_erase), "&
+  "proc_erase_program      = (flow_erase_program), "&
+  "proc_read(array)        = (flow_read(array_tdo)), "&
+  "proc_read(usercode)     = (flow_read(usercode)), "&
+  "proc_error_exit         = (flow_disable), "&
+  "proc_preload            = (flow_preload), "&
+  "proc_program_done       = (flow_program_done), "&
+  "proc_program_security   = (flow_program_security)";
+
+attribute ISC_ACTION of M4A3_64_32_XXVC : entity is
+  "erase         = ( proc_verify(idcode) recommended, "&
+                    "proc_preload recommended, "&
+                    "proc_enable, "&
+                    "proc_erase, "&
+                    "proc_erase_program, "&
+                    "proc_disable), "&
+  "program       = ( proc_verify(idcode) recommended, "&
+                    "proc_preload recommended, "&
+                    "proc_enable, "&
+                    "proc_erase, "&
+                    "proc_program_init, "&
+                    "proc_program(array), "&
+                    "proc_read_init, "&
+                    "proc_verify(array) proprietary, "&
+                    "proc_program_security optional, "&
+                    "proc_program_done, "&
+                    "proc_disable, "&
+                    "proc_verify(usercode)), "&
+  "verify        = ( proc_verify(idcode) recommended, "&
+                    "proc_preload recommended, "&
+                    "proc_enable, "&
+                    "proc_read_init, "&
+                    "proc_verify(array) proprietary, "&
+                    "proc_disable, "&
+                    "proc_verify(usercode)), "&
+  "read          = ( proc_verify(idcode) recommended, "&
+                    "proc_preload recommended, "&
+                    "proc_enable, "&
+                    "proc_read_init, "&
+                    "proc_read(array) proprietary, "&
+                    "proc_read(usercode), "&
+                    "proc_disable), "&
+  "verify_idcode = ( proc_verify(idcode)), "&
+  "secure        = ( proc_verify(idcode) recommended, "&
+                    "proc_preload recommended, "&
+                    "proc_enable, "&
+                    "proc_program_security, "&
+                    "proc_disable)";
+
+end M4A3_64_32_XXVC;
+
