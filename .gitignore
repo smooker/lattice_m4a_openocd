@@ -1,3 +1,4 @@
 *.vcd
 *.vvp
 rtl/blinky_tb
+bmp/
