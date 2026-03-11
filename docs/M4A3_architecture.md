@@ -245,7 +245,7 @@ fuses control which feature.
      v
  +----------+
  | OpenOCD   |  <- JTAG programming (WORKING)
- | + UM232H  |
+ | + FT2232H  |
  +----------+
      |
      v

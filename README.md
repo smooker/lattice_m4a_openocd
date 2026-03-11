@@ -1,32 +1,32 @@
 # Lattice ispMACH 4000 (M4A) — OpenOCD JTAG
 
-Programming Lattice M4A3-64/32 CPLD via OpenOCD and FTDI FT2232H (UM232H module).
+Programming Lattice M4A3-64/32 CPLD via OpenOCD and FTDI FT2232H.
 
 ## Hardware
 
 - **CPLD**: Lattice ispMACH M4A3-64/32, 44-pin TQFP, 3.3V
 - **JTAG ID**: `0x17486157`, IR length: 10 bits
-- **Programmer**: FTDI FT2232H (UM232H module), VID/PID `0403:6010`
+- **Programmer**: FTDI FT2232H, VID/PID `0403:6010`, **+5V tolerant I/O**
 
-### JTAG Wiring (UM232H → CPLD)
+### JTAG Wiring (FT2232H → CPLD)
 
-| UM232H Pin | FT232H Signal | JTAG Function |
-|------------|---------------|---------------|
-| AD0 (J2-6) | ADBUS0 | TCK |
-| AD1 (J2-7) | ADBUS1 | TDI |
-| AD2 (J2-8) | ADBUS2 | TDO |
-| AD3 (J2-9) | ADBUS3 | TMS |
-| AC0 (J1-14) | ACBUS0 | nTRST |
-| AC1 (J1-13) | ACBUS1 | nSRST |
+| FT2232H Signal | JTAG Function |
+|----------------|---------------|
+| ADBUS0 (AD0) | TCK |
+| ADBUS1 (AD1) | TDI |
+| ADBUS2 (AD2) | TDO |
+| ADBUS3 (AD3) | TMS |
+| ACBUS0 (AC0) | nTRST |
+| ACBUS1 (AC1) | nSRST |
 
-> UM232H is 3.3V only — matches M4A3 XXVC (3.3V) variant directly. No level shifter needed.
+> FT2232H I/O is +5V tolerant — works with both 3.3V and 5V targets directly, no level shifter needed.
 
 ## Files
 
 | File | Description |
 |------|-------------|
 | `openocd/go.sh` | JTAG scan — verifies connectivity and reads IDCODE |
-| `openocd/um232h_smooker_6010.cfg` | OpenOCD adapter config for FT2232H |
+| `ft2232h/ft2232h_smooker.cfg` | OpenOCD adapter config for FT2232H |
 | `M4A3_64_32_XXVC.bsdl` | BSDL model (3.3V, IEEE 1532 ISC support) |
 | `BSDLM4-643244PinTQFP.BSM` | Boundary Scan Model (5V, Vantis legacy) |
 | `README.txt` | Original notes and links |
@@ -54,7 +54,7 @@ Expected output should show JTAG tap with ID `0x17486157`.
 ### Program via SVF
 
 ```bash
-openocd -f ./openocd/um232h_smooker_6010.cfg \
+openocd -f ./ft2232h/ft2232h_smooker.cfg \
     -c "adapter speed 2000; transport select jtag" \
     -c "jtag newtap auto0 tap -irlen 10 -expected-id 0x17486157" \
     -c "init" \

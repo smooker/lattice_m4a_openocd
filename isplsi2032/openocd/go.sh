@@ -1,4 +1,4 @@
 #!/bin/bash
 openocd --debug=2 \
-    -f ./um232h_smooker_6010.cfg \
+    -f ../../ft2232h/ft2232h_smooker.cfg \
     -c "adapter speed 1000; transport select jtag; jtag newtap auto0 tap -irlen 5; "

@@ -2,3 +2,6 @@
 *.vvp
 rtl/blinky_tb
 bmp/
+isplsi2032/rtl/bcd10_tb
+isplsi2032/rtl/bcd10.vcd
+isplsi2032/rtl/bcd10.blif

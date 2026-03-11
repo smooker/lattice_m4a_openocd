@@ -31,7 +31,7 @@ svf: jedec
 	@echo "  In ispLEVER: File -> Export -> SVF"
 	@echo "  Output: $(DESIGN).svf"
 	@echo ""
-	@echo "Then program: cd ../openocd && openocd -f um232h_smooker_6010.cfg \\"
+	@echo "Then program: cd ../openocd && openocd -f ../ft2232h/ft2232h_smooker.cfg \\"
 	@echo "  -c 'adapter speed 2000; transport select jtag' \\"
 	@echo "  -c 'jtag newtap auto0 tap -irlen 10 -expected-id 0x17486157' \\"
 	@echo "  -c 'init' -c 'svf ../rtl/$(DESIGN).svf' -c 'shutdown'"

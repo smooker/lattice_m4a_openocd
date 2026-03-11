@@ -13,9 +13,9 @@ Extracted from Lattice datasheet, July 1997 (15 pages).
 | ispLSI 2032VL | 3.3V | IEEE 1532 | Yes (IR=5) | VL = Very Low power? |
 | ispLSI 2032E | 5V? | IEEE 1532 | Yes (IR=5) | Enhanced variant |
 
-**CRITICAL**: Check which variant is on the donor boards!
-- 5V variants: DO NOT connect to 3.3V FTDI directly
-- 3.3V variants (V/VL): Compatible with UM232H at 3.3V
+**FT2232H is +5V tolerant** — all variants connect directly, no level shifter needed.
+- FT2232H outputs 3.3V HIGH → 5V CMOS accepts as HIGH (VIH >= 2.0V)
+- FT2232H inputs tolerate 5V from chip TDO
 
 ## Architecture
 

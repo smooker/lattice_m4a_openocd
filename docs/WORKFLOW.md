@@ -44,8 +44,8 @@ From Verilog to programmed chip — without ispLEVER.
       |
       v
  +---------+
- | OpenOCD  |  JTAG programming via FTDI UM232H
- | + UM232H |  Status: WORKING
+ | OpenOCD  |  JTAG programming via FTDI FT2232H
+ | + FT2232H |  Status: WORKING
  +---------+
       |
       v
@@ -203,7 +203,7 @@ lattice_m4a_openocd/
     Makefile              Build targets
   openocd/              JTAG programming
     go.sh                 JTAG scan script
-    um232h_smooker_6010.cfg  FTDI adapter config
+    ft2232h_smooker.cfg  FTDI adapter config
   yosys/                Synthesis tool (git submodule)
   docs/                 Documentation
     M4A3_architecture.md  Architecture & block diagrams

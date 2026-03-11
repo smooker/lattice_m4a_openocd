@@ -1,0 +1,203 @@
+-- ispLSI2032VE 44-pin TQFP BSDL Model
+-- Copyright 2000, 2001 Lattice Semiconductor Corporation
+-- IEEE 1149.1 1994, File Version: V2.02, Date: Nov. 27, 2001
+-- Source: bsdl.info
+
+entity ispLSI2032VE is
+
+generic (PHYSICAL_PIN_MAP : string := "TQFP_44");
+
+port ( TDI:   in bit;
+       TMS:   in bit;
+       TCK:   in bit;
+       TDO:   out bit;
+       BSCAN: in bit;
+       RESET: in bit;
+       GOE:   in bit;
+       Clk:   in bit;
+       BIp:   inout bit_vector (0 to 31);
+       VCC:   linkage bit_vector (0 to 1);
+       GND:   linkage bit_vector (0 to 1)
+       );
+
+use STD_1149_1_1994.all;
+
+attribute COMPONENT_CONFORMANCE of ispLSI2032VE : entity is
+  "STD_1149_1_1993";
+
+attribute PIN_MAP of ispLSI2032VE : entity is PHYSICAL_PIN_MAP;
+
+constant TQFP_44: PIN_MAP_STRING:=
+  "TDI:8,"   &
+  "TMS:30,"  &
+  "TCK:27,"  &
+  "TDO:18,"  &
+  "RESET:29," &
+  "BSCAN:7," &
+  "GOE:40,"  &
+  "Clk:5,"   &
+  "BIp:(  9, 10, 11, 12, 13, 14, 15, 16," &
+  "      19, 20, 21, 22, 23, 24, 25, 26," &
+  "      31, 32, 33, 34, 35, 36, 37, 38," &
+  "      41, 42, 43, 44,  1,  2,  3,  4)," &
+  "VCC:( 6, 28)," &
+  "GND:(17, 39)" ;
+
+attribute TAP_SCAN_CLOCK of TCK : Signal is (5.0e6, BOTH);
+attribute TAP_SCAN_IN    of TDI : Signal is True;
+attribute TAP_SCAN_OUT   of TDO : Signal is True;
+attribute TAP_SCAN_MODE  of TMS : Signal is True;
+
+attribute COMPLIANCE_PATTERNS of ispLSI2032VE : entity is
+  "(BSCAN)(0)";
+
+attribute INSTRUCTION_LENGTH of ispLSI2032VE : entity is 5;
+
+attribute INSTRUCTION_OPCODE of ispLSI2032VE : entity is
+  "BYPASS      (11111), " &
+  "SAMPLE      (11100), " &
+  "EXTEST      (00000), " &
+  "IDCODE      (10110), " &
+  "USERCODE    (10111), " &
+  "HIGHZ       (11000), " &
+  "ADDSHFT     (00001), " &
+  "DATASHFT    (00010), " &
+  "UBE         (10000), " &
+  "PRGM        (00111), " &
+  "VFY         (10010), " &
+  "PRGMSC      (01001), " &
+  "PRIVATE     (00011,00100,00101,00110,01000,01010, " &
+               "01011,01100,01110,01111,10001,10011, " &
+               "10100,10101,11001,11010,11011,11101, " &
+               "11110)" ;
+
+attribute INSTRUCTION_CAPTURE of ispLSI2032VE : entity is "11001";
+attribute INSTRUCTION_PRIVATE of ispLSI2032VE : entity is "PRIVATE";
+
+-- IDCODE = 0x10301043
+attribute IDCODE_REGISTER of ispLSI2032VE: entity is
+  "0001"                 &  -- version (1)
+  "0000001100000001"     &  -- part number (0x0301)
+  "00000100001"          &  -- manufacturer (0x021 = Lattice)
+  "1" ;                     -- required by 1149.1
+
+attribute USERCODE_REGISTER of ispLSI2032VE: entity is
+  "11111111111111111111111111111111";
+
+attribute REGISTER_ACCESS of ispLSI2032VE : entity is
+  "BOUNDARY        (SAMPLE, EXTEST), " &
+  "BYPASS          (BYPASS, HIGHZ), " &
+  "ADDREG[102]     (ADDSHFT), " &
+  "DATAREG[80]     (DATASHFT), " &
+  "UBEREG[1]       (UBE), " &
+  "PRGREG[102]     (PRGM), " &
+  "VFYREG[80]      (VFY), " &
+  "SECREG[1]       (PRGMSC) " ;
+
+-- Full boundary scan: 102 cells, 32 I/O pins (3 cells each: ctl/out/in)
+attribute BOUNDARY_LENGTH of ispLSI2032VE : entity is 102;
+attribute BOUNDARY_REGISTER of ispLSI2032VE : entity is
+  "0101 (BC_1, *,        INTERNAL, X)," &
+  "0100 (BC_1, *,        INTERNAL, X)," &
+  "0099 (BC_1, Clk,      INPUT,    X)," &
+  "0098 (BC_1, RESET,    INPUT,    X)," &
+  "0097 (BC_1, *,        INTERNAL, X)," &
+  "0096 (BC_1, GOE,      INPUT,    X)," &
+  "0095 (BC_1, *,        CONTROL,  0)," &
+  "0094 (BC_1, BIp(12),  OUTPUT3,  X, 95, 0, Z)," &
+  "0093 (BC_1, BIp(12),  INPUT,    X)," &
+  "0092 (BC_1, *,        CONTROL,  0)," &
+  "0091 (BC_1, BIp(13),  OUTPUT3,  X, 92, 0, Z)," &
+  "0090 (BC_1, BIp(13),  INPUT,    X)," &
+  "0089 (BC_1, *,        CONTROL,  0)," &
+  "0088 (BC_1, BIp(14),  OUTPUT3,  X, 89, 0, Z)," &
+  "0087 (BC_1, BIp(14),  INPUT,    X)," &
+  "0086 (BC_1, *,        CONTROL,  0)," &
+  "0085 (BC_1, BIp(15),  OUTPUT3,  X, 86, 0, Z)," &
+  "0084 (BC_1, BIp(15),  INPUT,    X)," &
+  "0083 (BC_1, *,        CONTROL,  0)," &
+  "0082 (BC_1, BIp(8),   OUTPUT3,  X, 83, 0, Z)," &
+  "0081 (BC_1, BIp(8),   INPUT,    X)," &
+  "0080 (BC_1, *,        CONTROL,  0)," &
+  "0079 (BC_1, BIp(9),   OUTPUT3,  X, 80, 0, Z)," &
+  "0078 (BC_1, BIp(9),   INPUT,    X)," &
+  "0077 (BC_1, *,        CONTROL,  0)," &
+  "0076 (BC_1, BIp(10),  OUTPUT3,  X, 77, 0, Z)," &
+  "0075 (BC_1, BIp(10),  INPUT,    X)," &
+  "0074 (BC_1, *,        CONTROL,  0)," &
+  "0073 (BC_1, BIp(11),  OUTPUT3,  X, 74, 0, Z)," &
+  "0072 (BC_1, BIp(11),  INPUT,    X)," &
+  "0071 (BC_1, *,        CONTROL,  0)," &
+  "0070 (BC_1, BIp(4),   OUTPUT3,  X, 71, 0, Z)," &
+  "0069 (BC_1, BIp(4),   INPUT,    X)," &
+  "0068 (BC_1, *,        CONTROL,  0)," &
+  "0067 (BC_1, BIp(5),   OUTPUT3,  X, 68, 0, Z)," &
+  "0066 (BC_1, BIp(5),   INPUT,    X)," &
+  "0065 (BC_1, *,        CONTROL,  0)," &
+  "0064 (BC_1, BIp(6),   OUTPUT3,  X, 65, 0, Z)," &
+  "0063 (BC_1, BIp(6),   INPUT,    X)," &
+  "0062 (BC_1, *,        CONTROL,  0)," &
+  "0061 (BC_1, BIp(7),   OUTPUT3,  X, 62, 0, Z)," &
+  "0060 (BC_1, BIp(7),   INPUT,    X)," &
+  "0059 (BC_1, *,        CONTROL,  0)," &
+  "0058 (BC_1, BIp(0),   OUTPUT3,  X, 59, 0, Z)," &
+  "0057 (BC_1, BIp(0),   INPUT,    X)," &
+  "0056 (BC_1, *,        CONTROL,  0)," &
+  "0055 (BC_1, BIp(1),   OUTPUT3,  X, 56, 0, Z)," &
+  "0054 (BC_1, BIp(1),   INPUT,    X)," &
+  "0053 (BC_1, *,        CONTROL,  0)," &
+  "0052 (BC_1, BIp(2),   OUTPUT3,  X, 53, 0, Z)," &
+  "0051 (BC_1, BIp(2),   INPUT,    X)," &
+  "0050 (BC_1, *,        CONTROL,  0)," &
+  "0049 (BC_1, BIp(3),   OUTPUT3,  X, 50, 0, Z)," &
+  "0048 (BC_1, BIp(3),   INPUT,    X)," &
+  "0047 (BC_1, *,        CONTROL,  0)," &
+  "0046 (BC_1, BIp(16),  OUTPUT3,  X, 47, 0, Z)," &
+  "0045 (BC_1, BIp(16),  INPUT,    X)," &
+  "0044 (BC_1, *,        CONTROL,  0)," &
+  "0043 (BC_1, BIp(17),  OUTPUT3,  X, 44, 0, Z)," &
+  "0042 (BC_1, BIp(17),  INPUT,    X)," &
+  "0041 (BC_1, *,        CONTROL,  0)," &
+  "0040 (BC_1, BIp(18),  OUTPUT3,  X, 41, 0, Z)," &
+  "0039 (BC_1, BIp(18),  INPUT,    X)," &
+  "0038 (BC_1, *,        CONTROL,  0)," &
+  "0037 (BC_1, BIp(19),  OUTPUT3,  X, 38, 0, Z)," &
+  "0036 (BC_1, BIp(19),  INPUT,    X)," &
+  "0035 (BC_1, *,        CONTROL,  0)," &
+  "0034 (BC_1, BIp(20),  OUTPUT3,  X, 35, 0, Z)," &
+  "0033 (BC_1, BIp(20),  INPUT,    X)," &
+  "0032 (BC_1, *,        CONTROL,  0)," &
+  "0031 (BC_1, BIp(21),  OUTPUT3,  X, 32, 0, Z)," &
+  "0030 (BC_1, BIp(21),  INPUT,    X)," &
+  "0029 (BC_1, *,        CONTROL,  0)," &
+  "0028 (BC_1, BIp(22),  OUTPUT3,  X, 29, 0, Z)," &
+  "0027 (BC_1, BIp(22),  INPUT,    X)," &
+  "0026 (BC_1, *,        CONTROL,  0)," &
+  "0025 (BC_1, BIp(23),  OUTPUT3,  X, 26, 0, Z)," &
+  "0024 (BC_1, BIp(23),  INPUT,    X)," &
+  "0023 (BC_1, *,        CONTROL,  0)," &
+  "0022 (BC_1, BIp(24),  OUTPUT3,  X, 23, 0, Z)," &
+  "0021 (BC_1, BIp(24),  INPUT,    X)," &
+  "0020 (BC_1, *,        CONTROL,  0)," &
+  "0019 (BC_1, BIp(25),  OUTPUT3,  X, 20, 0, Z)," &
+  "0018 (BC_1, BIp(25),  INPUT,    X)," &
+  "0017 (BC_1, *,        CONTROL,  0)," &
+  "0016 (BC_1, BIp(26),  OUTPUT3,  X, 17, 0, Z)," &
+  "0015 (BC_1, BIp(26),  INPUT,    X)," &
+  "0014 (BC_1, *,        CONTROL,  0)," &
+  "0013 (BC_1, BIp(27),  OUTPUT3,  X, 14, 0, Z)," &
+  "0012 (BC_1, BIp(27),  INPUT,    X)," &
+  "0011 (BC_1, *,        CONTROL,  0)," &
+  "0010 (BC_1, BIp(28),  OUTPUT3,  X, 11, 0, Z)," &
+  "0009 (BC_1, BIp(28),  INPUT,    X)," &
+  "0008 (BC_1, *,        CONTROL,  0)," &
+  "0007 (BC_1, BIp(29),  OUTPUT3,  X,  8, 0, Z)," &
+  "0006 (BC_1, BIp(29),  INPUT,    X)," &
+  "0005 (BC_1, *,        CONTROL,  0)," &
+  "0004 (BC_1, BIp(30),  OUTPUT3,  X,  5, 0, Z)," &
+  "0003 (BC_1, BIp(30),  INPUT,    X)," &
+  "0002 (BC_1, *,        CONTROL,  0)," &
+  "0001 (BC_1, BIp(31),  OUTPUT3,  X,  2, 0, Z)," &
+  "0000 (BC_1, BIp(31),  INPUT,    X)";
+
+end ispLSI2032VE;

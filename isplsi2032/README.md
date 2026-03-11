@@ -6,18 +6,20 @@ Available on donor PCBs in the lab.
 
 The ispLSI 2032 family has **multiple voltage variants**:
 
-| Variant | VCC | ISP | JTAG | UM232H compatible? |
-|---------|-----|-----|------|--------------------|
-| ispLSI 2032 | **5V** | Legacy serial | **No** | NO — needs 5V |
-| ispLSI 2032A | **5V** | Legacy serial | **No** | NO — needs 5V |
-| ispLSI 2032V | **3.3V** | IEEE 1532 | **Yes** (IR=5) | YES |
-| ispLSI 2032VL | **3.3V** | IEEE 1532 | **Yes** (IR=5) | YES |
-| ispLSI 2032E | **5V** | IEEE 1532 | **Yes** (IR=5) | NO — needs 5V |
+| Variant | VCC | ISP | JTAG | FT2232H direct? | IDCODE |
+|---------|-----|-----|------|-----------------|--------|
+| ispLSI 2032 | **5V** | Hidden JTAG | **Yes** | YES (5V tolerant) | TBD |
+| ispLSI 2032A | **5V** | Hidden JTAG | **Yes** | YES (5V tolerant) | TBD |
+| ispLSI 2032V | **3.3V** | IEEE 1532 | **Yes** (IR=5) | YES | 0x00301043 |
+| ispLSI 2032VL | **3.3V** | IEEE 1532 | **Yes** (IR=5) | YES | TBD |
+| ispLSI 2032E | **5V** | IEEE 1532 | **Yes** (IR=5) | YES (5V tolerant) | 0x00A4E043 |
+| ispLSI 2032VE | **3.3V** | IEEE 1532 | **Yes** (IR=5) + BScan | YES | 0x10301043 |
 
-**CHECK THE MARKING ON THE CHIP before connecting!**
-- Only V/VL variants work at 3.3V with our UM232H FTDI adapter
-- Original 2032/2032A have NO JTAG — only legacy serial ISP
-- 2032E has JTAG but needs 5V level shifter
+**FT2232H is +5V tolerant on all I/O** — direct connection to ALL variants, no level shifter!
+- "Legacy ISP" is actually JTAG with different pin names (Lattice patent US5412260A)
+- All variants have JTAG capability
+- For 5V chips: FT2232H outputs 3.3V HIGH → accepted as HIGH (VIH >= 2.0V)
+- Hold ispEN (pin 7) LOW to enable JTAG mode
 
 ## Device Summary
 
@@ -93,7 +95,7 @@ Standard 4-wire JTAG: TCK, TDI, TDO, TMS
 ## OpenOCD Quick Test (JTAG variants only)
 
 ```bash
-openocd -f ../openocd/um232h_smooker_6010.cfg \
+openocd -f ../../ft2232h/ft2232h_smooker.cfg \
     -c "adapter speed 1000; transport select jtag" \
     -c "jtag newtap auto0 tap -irlen 5" \
     -c "init"

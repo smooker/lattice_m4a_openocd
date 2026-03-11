@@ -1,0 +1,5 @@
+read_verilog bcd10.v
+synth -top bcd10 -flatten
+abc -sop
+stat
+write_blif bcd10.blif
