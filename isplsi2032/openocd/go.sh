@@ -1,4 +1,8 @@
 #!/bin/bash
 openocd --debug=2 \
     -f ../../ft2232h/ft2232h_smooker.cfg \
-    -c "adapter speed 100; transport select jtag; jtag newtap auto0 tap -irlen 5; "
+    -c "ftdi layout_signal nSRST -data 0x0010 -oe 0x0010" \
+    -c "adapter speed 100; reset_config srst_only; transport select jtag" \
+    -c "jtag newtap auto0 tap -irlen 5" \
+    -c "init" \
+    -c "reset init"
