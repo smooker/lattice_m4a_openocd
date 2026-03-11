@@ -155,19 +155,13 @@ class ISP2032:
         """Append goto_idle to buffer."""
         self._buf_clock(buf, mode_h=True, sdi_h=False)
 
-    def _buf_change_state(self, buf):
-        """Append change_state (2 clocks: HH + LX) to buffer."""
-        self._buf_clock(buf, mode_h=True, sdi_h=True)
-        self._buf_clock(buf, mode_h=False, sdi_h=False)
+    def _buf_change_state(self, buf, read_sdo=False):
+        """Append change_state (2 clocks: HH + LX) to buffer.
 
-    def _buf_change_state_data(self, buf):
-        """Append change_state_data (HH clock + pin setup, no extra clock)."""
-        val_hh = nSRST | MODE | SDI
-        val_lx = nSRST
-        buf.extend([0x80, val_hh & 0xFF, DIR])          # setup HH
-        buf.extend([0x80, (val_hh | SCLK) & 0xFF, DIR]) # rising edge
-        buf.extend([0x80, val_hh & 0xFF, DIR])           # falling edge
-        buf.extend([0x80, val_lx & 0xFF, DIR])           # set MODE=L (no clock)
+        If read_sdo=True, captures SDO from the LX clock (bit 0 of data).
+        """
+        self._buf_clock(buf, mode_h=True, sdi_h=True)             # HH -> advance
+        self._buf_clock(buf, mode_h=False, sdi_h=False, read_sdo=read_sdo)  # LX -> settle
 
     def _buf_shift_command(self, buf, cmd):
         """Append 5-bit command shift to buffer."""
@@ -203,6 +197,9 @@ class ISP2032:
     def read_row_fast(self, row):
         """Read one row using buffered MPSSE. Returns (high, low) tuple.
         Much faster than read_row() — one USB round-trip per half.
+
+        DATASHFT execute just selects the data SR for shifting — it doesn't
+        shift. All 40 bits come from subsequent MODE=L clocks.
         """
         results = []
         for cmd in (VERLDH, VERLDL):
@@ -211,25 +208,26 @@ class ISP2032:
             self._buf_goto_idle(buf)
             self._buf_change_state(buf)
             self._buf_shift_command(buf, ADDSHFT)
-            self._buf_change_state_data(buf)        # data shift — no extra clock!
+            self._buf_change_state(buf)        # SHIFT -> EXECUTE
             addr = 1 << row
             self._buf_shift_data_in(buf, addr, ADDR_SR_BITS)
             # 2. VER/LDH or VER/LDL
             self._buf_goto_idle(buf)
             self._buf_change_state(buf)
             self._buf_shift_command(buf, cmd)
-            self._buf_change_state_data(buf)        # no LX — avoid data shift
-            # Flush address + verify command, wait for data load
+            self._buf_change_state(buf)        # SHIFT -> EXECUTE (triggers verify)
+            # Flush address + verify command, wait for E²CMOS load
             self.ftdi.write_data(bytes(buf))
             time.sleep(T_PWV)
             # 3. DATASHFT + read out 40 bits
+            #    DATASHFT execute selects data SR; all 40 bits from MODE=L clocks
             buf2 = bytearray()
             self._buf_goto_idle(buf2)
             self._buf_change_state(buf2)
             self._buf_shift_command(buf2, DATASHFT)
-            self._buf_change_state_data(buf2)       # data shift — no extra clock!
-            self._buf_shift_data_out(buf2, DATA_SR_HIGH)
-            bits = self._flush_and_read(buf2, DATA_SR_HIGH)
+            self._buf_change_state(buf2)  # -> EXECUTE (no shift, just selects SR)
+            self._buf_shift_data_out(buf2, DATA_SR_HIGH)  # all 40 bits
+            bits = self._flush_and_read(buf2, DATA_SR_HIGH)  # 40 reads
             # Reconstruct value (LSB first)
             val = 0
             for i, b in enumerate(bits):
@@ -276,22 +274,14 @@ class ISP2032:
 
     def change_state(self):
         """Advance to next state: IDLE->SHIFT or SHIFT->EXECUTE.
-        Two clocks: HH (advance) + LX (settle/execute trigger).
-        The LX clock acts as execution trigger for commands like UBE/PRGM.
-        For data shift operations, use change_state_data() instead.
-        """
-        self._clock(mode_h=True, sdi_h=True)    # HH -> advance
-        self._clock(mode_h=False, sdi_h=False)   # LX -> settle/execute
 
-    def change_state_data(self):
-        """Advance to EXECUTE state for data shifting (ADDSHFT/DATASHFT).
-        ONE rising edge (HH = advance), then set MODE=L without clocking.
-        No extra LX clock — avoids shifting data register.
+        Two clocks: HH (advance state) + LX (settle into new state).
+        The LX clock returns SDO — important for data readout!
+        In EXECUTE state, this LX clock also triggers command execution
+        and shifts the data register by 1 position.
         """
-        # HH clock: state advances on rising edge
-        self._clock(mode_h=True, sdi_h=True)
-        # Set MODE=L for data shifting — NO clock, just pin setup
-        self._pins(nSRST)  # MODE=L, SDI=L, SCLK=L
+        self._clock(mode_h=True, sdi_h=True)    # HH -> advance state
+        return self._clock(mode_h=False, sdi_h=False)  # LX -> settle; returns SDO
 
     def shift_command(self, cmd):
         """Shift a 5-bit ISP command in SHIFT state. LSB first."""
@@ -327,17 +317,26 @@ class ISP2032:
     def get_id(self):
         """Read 8-bit device ID. Returns integer (0x15 for ispLSI 2032).
 
-        From Data Book p.8-37:
-          Phase 1: MODE=H, SDI=L, 1 clock -> loads ID into shift register
-          Phase 2: MODE=L, SDI=H, 8 clocks -> shifts ID out on SDO (LSB first)
+        Protocol:
+          1. HL clock — goes to IDLE, loads ID, bit 0 shifts to SR output
+             (but MODE=H bypasses SDO to SDI, so we can't read it yet)
+          2. Switch MODE=L without clocking — SDO mux flips to register output
+             Now we can read bit 0 without shifting the register further.
+          3. 7 MODE=L clocks — shift out bits 1-7
         """
-        self.goto_idle()
-        # Phase 1: Load ID
-        self._clock(mode_h=True, sdi_h=False)
-        # Phase 2: Shift out 8 bits
-        bits = []
-        for i in range(DEVICE_ID_BITS):
-            sdo = self._clock(mode_h=False, sdi_h=True)
+        # HL clock: load ID register, bit 0 at SR output (bypassed by MODE=H)
+        val = nSRST | MODE                      # MODE=H, SDI=L
+        self._pins(val)                          # setup
+        self._pins(val | SCLK)                   # rising edge (loads ID)
+        self._pins(val)                          # falling edge
+        # Switch MODE=L without clocking — read bit 0 from register output
+        self._pins(nSRST)                        # MODE=L, SCLK stays low
+        pins = self._read()
+        bit0 = 1 if (pins & SDO) else 0
+        bits = [bit0]
+        # Shift out bits 1-7 with MODE=L clocks
+        for i in range(DEVICE_ID_BITS - 1):
+            sdo = self._clock(mode_h=False, sdi_h=False)
             bits.append(sdo)
         # Reconstruct byte (LSB first)
         dev_id = 0
@@ -364,7 +363,7 @@ class ISP2032:
         self.goto_idle()
         self.change_state()                      # IDLE -> SHIFT
         self.shift_command(ADDSHFT)
-        self.change_state_data()                 # SHIFT -> EXECUTE (no extra shift!)
+        self.change_state()                      # SHIFT -> EXECUTE
         self._shift_data_in(addr, ADDR_SR_BITS)  # 102-bit address
 
     def read_row(self, row):
@@ -384,29 +383,31 @@ class ISP2032:
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(VERLDH)
-        self.change_state_data()                 # -> EXECUTE (no LX — avoid data shift)
-        time.sleep(T_PWV)                        # Wait for load from E²CMOS
+        self.change_state()                      # -> EXECUTE (triggers verify)
+        time.sleep(T_PWV)                        # wait for E²CMOS load
 
-        # 3. DATASHFT — shift out HIGH
+        # 3. DATASHFT — shift out HIGH (40 bits)
+        #    DATASHFT execute just selects the data SR — no shift happens.
+        #    All 40 bits come from subsequent MODE=L clocks.
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(DATASHFT)
-        self.change_state_data()                 # -> EXECUTE (no extra shift!)
-        data_h = self._shift_data_out(DATA_SR_HIGH)
+        self.change_state()                      # -> EXECUTE (selects data SR)
+        data_h = self._shift_data_out(DATA_SR_HIGH)  # all 40 bits
 
         # 4. VER/LDL — load low order data
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(VERLDL)
-        self.change_state_data()                 # -> EXECUTE (no LX — avoid data shift)
-        time.sleep(T_PWV)                        # Wait for load from E²CMOS
+        self.change_state()                      # -> EXECUTE (triggers verify)
+        time.sleep(T_PWV)                        # wait for E²CMOS load
 
-        # 5. DATASHFT — shift out LOW
+        # 5. DATASHFT — shift out LOW (40 bits)
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(DATASHFT)
-        self.change_state_data()                 # -> EXECUTE (no extra shift!)
-        data_l = self._shift_data_out(DATA_SR_LOW)
+        self.change_state()                      # -> EXECUTE (selects data SR)
+        data_l = self._shift_data_out(DATA_SR_LOW)  # all 40 bits
 
         return (data_h, data_l)
 
@@ -434,29 +435,29 @@ class ISP2032:
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(DATASHFT)
-        self.change_state_data()                 # -> EXECUTE (no extra shift!)
+        self.change_state()                      # -> EXECUTE
         self._shift_data_in(high_40bits, DATA_SR_HIGH)
 
         # 3. PRGMH — program high order
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(PRGMH)
-        self.change_state()                      # -> EXECUTE (2-clock OK, triggers program)
-        self._execute(wait_time=T_PWP)           # Wait 200ms
+        self.change_state()                      # -> EXECUTE
+        self._execute(wait_time=T_PWP)           # trigger program + wait 200ms
 
         # 4. DATASHFT — shift in LOW order data
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(DATASHFT)
-        self.change_state_data()                 # -> EXECUTE (no extra shift!)
+        self.change_state()                      # -> EXECUTE
         self._shift_data_in(low_40bits, DATA_SR_LOW)
 
         # 5. PRGML — program low order
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(PRGML)
-        self.change_state()                      # -> EXECUTE (2-clock OK, triggers program)
-        self._execute(wait_time=T_PWP)           # Wait 200ms
+        self.change_state()                      # -> EXECUTE
+        self._execute(wait_time=T_PWP)           # trigger program + wait 200ms
 
     def write_all(self, rows):
         """Program all 102 rows from list of (high, low) tuples.
@@ -490,7 +491,7 @@ class ISP2032:
         self.goto_idle()
         self.change_state()                      # IDLE -> SHIFT
         self.shift_command(FLOWTHRU)
-        self.change_state_data()                 # -> EXECUTE (data shift, no extra clock)
+        self.change_state()                      # -> EXECUTE
         # In EXECUTE with FLOWTHRU: SDI passes to SDO
         test_val = 0xA5
         result = 0
@@ -506,3 +507,260 @@ def fmt_hex(val, bits):
     """Format value as hex with appropriate width."""
     nibbles = max((bits + 3) // 4, 1)
     return f"0x{val:0{nibbles}X}"
+
+
+# ---- CLI ----
+
+def cmd_test(args):
+    """Self-test: ID + FLOWTHRU + erased read spot-check."""
+    isp = ISP2032(verbose=args.verbose)
+    try:
+        isp.enter_isp()
+        errors = 0
+
+        # 1. Device ID
+        dev_id = isp.get_id()
+        id_ok = (dev_id == 0x15)
+        print(f"Device ID: {fmt_hex(dev_id, 8)} {'OK' if id_ok else 'FAIL (expected 0x15)'}")
+        if not id_ok:
+            # Read again to check consistency
+            dev_id2 = isp.get_id()
+            print(f"  Re-read:  {fmt_hex(dev_id2, 8)}")
+            errors += 1
+
+        # 2. FLOWTHRU
+        ft = isp.flowthru_test()
+        ft_ok = (ft == 0xA5)
+        print(f"FLOWTHRU:  {fmt_hex(ft, 8)} {'OK' if ft_ok else 'FAIL (expected 0xA5)'}")
+        if not ft_ok:
+            errors += 1
+
+        # 3. Read rows 0, 50, 101 — report what we see
+        print(f"Spot-read rows 0, 50, 101:")
+        for r in [0, 50, 101]:
+            h, l = isp.read_row_fast(r)
+            h_str = "ERASED" if h == ERASED_HIGH else fmt_hex(h, 40)
+            l_str = "ERASED" if l == ERASED_LOW else fmt_hex(l, 40)
+            print(f"  Row {r:3d}: H={h_str}  L={l_str}")
+
+        # 4. Read row 0 with slow (unbuffered) path and compare
+        h_fast, l_fast = isp.read_row_fast(0)
+        h_slow, l_slow = isp.read_row(0)
+        match = (h_fast == h_slow and l_fast == l_slow)
+        print(f"Fast vs slow read row 0: {'MATCH' if match else 'MISMATCH!'}")
+        if not match:
+            print(f"  Fast: H={fmt_hex(h_fast,40)} L={fmt_hex(l_fast,40)}")
+            print(f"  Slow: H={fmt_hex(h_slow,40)} L={fmt_hex(l_slow,40)}")
+            errors += 1
+
+        isp.exit_isp()
+        print(f"\nResult: {'PASS' if errors == 0 else f'FAIL ({errors} errors)'}")
+        return 0 if errors == 0 else 1
+    except Exception as e:
+        print(f"ERROR: {e}")
+        return 1
+    finally:
+        isp.close()
+
+
+def cmd_erase(args):
+    """Bulk erase (UBE) + verify erased."""
+    isp = ISP2032(verbose=args.verbose)
+    try:
+        isp.enter_isp()
+
+        dev_id = isp.get_id()
+        print(f"Device ID: {fmt_hex(dev_id, 8)}")
+
+        print("Erasing (UBE)...")
+        isp.bulk_erase()
+        print("Done. Verifying...")
+
+        errors = 0
+        for r in range(NUM_ROWS):
+            h, l = isp.read_row_fast(r)
+            if h != ERASED_HIGH or l != ERASED_LOW:
+                print(f"  Row {r:3d} NOT erased: H={fmt_hex(h,40)} L={fmt_hex(l,40)}")
+                errors += 1
+
+        isp.exit_isp()
+        if errors == 0:
+            print(f"All {NUM_ROWS} rows erased. OK")
+        else:
+            print(f"FAIL: {errors} rows not erased!")
+        return 0 if errors == 0 else 1
+    except Exception as e:
+        print(f"ERROR: {e}")
+        return 1
+    finally:
+        isp.close()
+
+
+def cmd_read(args):
+    """Read all fuses, save to .fuse + .txt files."""
+    isp = ISP2032(verbose=args.verbose)
+    try:
+        isp.enter_isp()
+
+        dev_id = isp.get_id()
+        print(f"Device ID: {fmt_hex(dev_id, 8)}")
+
+        print(f"Reading {NUM_ROWS} rows...")
+        t0 = time.time()
+        rows = []
+        programmed = 0
+        for r in range(NUM_ROWS):
+            h, l = isp.read_row_fast(r)
+            rows.append((h, l))
+            if h != ERASED_HIGH or l != ERASED_LOW:
+                programmed += 1
+            if (r + 1) % 20 == 0 or r == NUM_ROWS - 1:
+                print(f"  {r+1:3d}/{NUM_ROWS}", end="\r")
+        elapsed = time.time() - t0
+        print(f"\nDone in {elapsed:.1f}s  ({programmed} programmed rows)")
+
+        isp.exit_isp()
+
+        # Save files
+        fuse_file = args.output
+        txt_file = fuse_file.rsplit('.', 1)[0] + '.txt'
+
+        # Binary: 102 rows x 10 bytes
+        buf = bytearray()
+        for h, l in rows:
+            buf.extend(h.to_bytes(5, byteorder='big'))
+            buf.extend(l.to_bytes(5, byteorder='big'))
+        with open(fuse_file, 'wb') as f:
+            f.write(bytes(buf))
+
+        # Text
+        with open(txt_file, 'w') as f:
+            f.write(f"# ispLSI 2032 fuse dump — {NUM_ROWS} rows x 80 bits\n")
+            f.write(f"# Format: ROW  HIGH_40bit  LOW_40bit\n")
+            f.write(f"# Erased = 0x3FFFFFFFFF, Programmed fuse = 0\n#\n")
+            for r, (h, l) in enumerate(rows):
+                marker = "  *" if (h != ERASED_HIGH or l != ERASED_LOW) else ""
+                f.write(f"{r:3d}  0x{h:010X}  0x{l:010X}{marker}\n")
+
+        print(f"Saved: {fuse_file} ({len(buf)} bytes), {txt_file}")
+
+        if programmed > 0:
+            print(f"\nProgrammed rows:")
+            for r, (h, l) in enumerate(rows):
+                if h != ERASED_HIGH or l != ERASED_LOW:
+                    print(f"  Row {r:3d}: H=0x{h:010X} L=0x{l:010X}")
+        return 0
+    except Exception as e:
+        print(f"ERROR: {e}")
+        return 1
+    finally:
+        isp.close()
+
+
+def cmd_write_test(args):
+    """Write a test pattern to row 0, read back, verify, then erase."""
+    isp = ISP2032(verbose=args.verbose)
+    try:
+        isp.enter_isp()
+
+        dev_id = isp.get_id()
+        print(f"Device ID: {fmt_hex(dev_id, 8)}")
+
+        # Patterns to test (38-bit values — top 2 bits must be 0)
+        patterns = [
+            (0x2AAAAAAAAA, 0x1555555555, "alternating 10/01"),
+            (0x1555555555, 0x2AAAAAAAAA, "alternating 01/10"),
+            (0x0000000001, 0x0000000001, "single bit low"),
+            (0x2000000000, 0x2000000000, "single bit high"),
+            (0x0000000000, 0x0000000000, "all programmed"),
+        ]
+
+        errors = 0
+        for pat_h, pat_l, desc in patterns:
+            print(f"\nTest: {desc}")
+            print(f"  Erase...")
+            isp.bulk_erase()
+
+            print(f"  Write row 0: H={fmt_hex(pat_h,40)} L={fmt_hex(pat_l,40)}")
+            isp.write_row(0, pat_h, pat_l)
+
+            h, l = isp.read_row_fast(0)
+            ok = (h == pat_h and l == pat_l)
+            print(f"  Read back:   H={fmt_hex(h,40)} L={fmt_hex(l,40)}  {'PASS' if ok else 'FAIL'}")
+            if not ok:
+                errors += 1
+
+        # Multi-row test
+        print(f"\nMulti-row test (rows 10-19)...")
+        isp.bulk_erase()
+        for r in range(10, 20):
+            pat = r & 0x3FFFFFFFFF
+            isp.write_row(r, pat, ~pat & 0x3FFFFFFFFF)
+        multi_err = 0
+        for r in range(10, 20):
+            pat = r & 0x3FFFFFFFFF
+            exp_l = ~pat & 0x3FFFFFFFFF
+            h, l = isp.read_row_fast(r)
+            if h != pat or l != exp_l:
+                print(f"  Row {r}: FAIL (H={fmt_hex(h,40)} L={fmt_hex(l,40)})")
+                multi_err += 1
+        if multi_err == 0:
+            print(f"  All 10 rows: PASS")
+        errors += multi_err
+
+        # Cleanup
+        print(f"\nFinal erase...")
+        isp.bulk_erase()
+
+        isp.exit_isp()
+        print(f"\nResult: {'PASS' if errors == 0 else f'FAIL ({errors} errors)'}")
+        return 0 if errors == 0 else 1
+    except Exception as e:
+        print(f"ERROR: {e}")
+        return 1
+    finally:
+        isp.close()
+
+
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(
+        description='ispLSI 2032 ISP tool — run on HOST with FT2232H',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""\
+examples:
+  python3 isp.py --test          # ID + FLOWTHRU + spot read
+  python3 isp.py --erase         # bulk erase + verify
+  python3 isp.py --read          # dump all fuses to file
+  python3 isp.py --write-test    # write/read pattern test
+""")
+    parser.add_argument('--test', action='store_true',
+                        help='Self-test: ID, FLOWTHRU, spot-read')
+    parser.add_argument('--erase', action='store_true',
+                        help='Bulk erase + verify all rows erased')
+    parser.add_argument('--read', action='store_true',
+                        help='Read all fuses to file')
+    parser.add_argument('--write-test', action='store_true',
+                        help='Write/read pattern test (erases chip!)')
+    parser.add_argument('-o', '--output', default='dump.fuse',
+                        help='Output file for --read (default: dump.fuse)')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='Verbose ISP output')
+    args = parser.parse_args()
+
+    if not any([args.test, args.erase, args.read, args.write_test]):
+        parser.print_help()
+        return 1
+
+    if args.test:
+        return cmd_test(args)
+    elif args.erase:
+        return cmd_erase(args)
+    elif args.read:
+        return cmd_read(args)
+    elif args.write_test:
+        return cmd_write_test(args)
+
+
+if __name__ == '__main__':
+    sys.exit(main())
