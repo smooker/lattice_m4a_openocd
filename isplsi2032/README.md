@@ -98,27 +98,28 @@ Universal TQFP 32~64pin adapter (0.8mm pitch).  Pin 1 is **top-left** on TQFP44.
 
 ![TQFP44 adapter](media/tqfp44_adapter.jpg)
 
-The adapter has 64 holes but only 44 are used.  Each side has a gap of 5 unused holes:
+The adapter has 64 holes but only 44 are used.  Each side has a gap of 5 unused holes.
+Sides 1–2: gap at end; sides 3–4: gap at start (chip centered, traces route outward).
 
-| Chip pins | Adapter holes | Offset |
-|-----------|---------------|--------|
-|  1 – 11   |  1 – 11       | +0     |
-| 12 – 22   | 17 – 27       | +5     |
-| 23 – 33   | 33 – 43       | +10    |
-| 34 – 44   | 49 – 59       | +15    |
+| Chip pins | Adapter holes | Offset | Gap position     |
+|-----------|---------------|--------|------------------|
+|  1 – 11   |  1 – 11       | +0     | end (12–16)      |
+| 12 – 22   | 17 – 27       | +5     | end (28–32)      |
+| 23 – 33   | 38 – 48       | +15    | start (33–37)    |
+| 34 – 44   | 54 – 64       | +20    | start (49–53)    |
 
 ### FT2232H → Adapter Wiring (8 wires)
 
-| Chip pin | Adapter | Signal        | FT2232H    |
-|----------|---------|---------------|------------|
-|  6, 28   |  6, 38  | VCC           | +5V        |
-|  7       |  7      | ispEN         | GND        |
-|  8       |  8      | SDI (TDI)     | ADBUS1     |
-| 17, 39   | 22, 54  | GND           | GND        |
-| 18       | 23      | SDO (TDO)    | ADBUS2     |
-| 27       | 37      | SCLK (TCK)   | ADBUS0     |
-| 29       | 39      | RESET/Y1      | ADBUS4 (nSRST) |
-| 30       | 40      | MODE (TMS)   | ADBUS3     |
+| Chip pin | Adapter | Signal        | FT2232H          |
+|----------|---------|---------------|------------------|
+|  6, 28   |  6, 43  | VCC           | +5V              |
+|  7       |  7      | ispEN         | GND              |
+|  8       |  8      | SDI (TDI)     | ADBUS1           |
+| 17, 39   | 22, 59  | GND           | GND              |
+| 18       | 23      | SDO (TDO)     | ADBUS2           |
+| 27       | 42      | SCLK (TCK)    | ADBUS0           |
+| 29       | 44      | RESET/Y1      | ADBUS4 (nSRST)  |
+| 30       | 45      | MODE (TMS)    | ADBUS3           |
 
 ## OpenOCD Quick Test (JTAG variants only)
 
