@@ -81,15 +81,15 @@ def main():
             print(f" WARNING: expected 0x{EXPECTED_ID:02X}")
             print("Continuing anyway...")
 
-        # Read all rows
-        print(f"\nReading {NUM_ROWS} rows...")
+        # Read all rows (buffered MPSSE for speed)
+        print(f"\nReading {NUM_ROWS} rows (buffered MPSSE)...")
         t0 = time.time()
         rows = []
         erased_val = 0x3FFFFFFFFF
         programmed_count = 0
 
         for r in range(NUM_ROWS):
-            h, l = isp.read_row(r)
+            h, l = isp.read_row_fast(r)
             rows.append((h, l))
             if h != erased_val or l != erased_val:
                 programmed_count += 1

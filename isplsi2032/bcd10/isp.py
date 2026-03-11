@@ -134,6 +134,107 @@ class ISP2032:
         pins = self._read()
         return 1 if (pins & SDO) else 0
 
+    # ---- Buffered (fast) operations ----
+    # Batch all MPSSE commands into one USB write, read all SDO at once.
+    # ~200x faster than one-at-a-time for USB latency-bound operations.
+
+    def _buf_clock(self, buf, mode_h, sdi_h, read_sdo=False):
+        """Append one clock cycle to MPSSE command buffer.
+        If read_sdo=True, appends a read command (caller must collect response).
+        """
+        val = nSRST
+        if mode_h: val |= MODE
+        if sdi_h:  val |= SDI
+        buf.extend([0x80, val & 0xFF, DIR])          # setup
+        buf.extend([0x80, (val | SCLK) & 0xFF, DIR]) # rising edge
+        buf.extend([0x80, val & 0xFF, DIR])           # falling edge
+        if read_sdo:
+            buf.append(0x81)                          # read ADBUS
+
+    def _buf_goto_idle(self, buf):
+        """Append goto_idle to buffer."""
+        self._buf_clock(buf, mode_h=True, sdi_h=False)
+
+    def _buf_change_state(self, buf):
+        """Append change_state (HH + LX settle) to buffer."""
+        self._buf_clock(buf, mode_h=True, sdi_h=True)
+        self._buf_clock(buf, mode_h=False, sdi_h=False)
+
+    def _buf_shift_command(self, buf, cmd):
+        """Append 5-bit command shift to buffer."""
+        for i in range(CMD_BITS):
+            bit = (cmd >> i) & 1
+            self._buf_clock(buf, mode_h=False, sdi_h=bool(bit))
+
+    def _buf_shift_data_in(self, buf, data, nbits):
+        """Append data shift-in to buffer."""
+        for i in range(nbits):
+            bit = (data >> i) & 1
+            self._buf_clock(buf, mode_h=False, sdi_h=bool(bit))
+
+    def _buf_shift_data_out(self, buf, nbits):
+        """Append data shift-out to buffer (with reads)."""
+        for i in range(nbits):
+            self._buf_clock(buf, mode_h=False, sdi_h=False, read_sdo=True)
+
+    def _buf_execute(self, buf):
+        """Append execute clock to buffer (no wait — caller handles timing)."""
+        self._buf_clock(buf, mode_h=False, sdi_h=False)
+
+    def _flush_and_read(self, buf, num_reads):
+        """Send buffered commands, read back SDO samples.
+        Returns list of 0/1 values.
+        """
+        self.ftdi.write_data(bytes(buf))
+        if num_reads == 0:
+            return []
+        raw = self.ftdi.read_data_bytes(num_reads, attempt=20)
+        return [1 if (b & SDO) else 0 for b in raw]
+
+    def read_row_fast(self, row):
+        """Read one row using buffered MPSSE. Returns (high, low) tuple.
+        Much faster than read_row() — one USB round-trip per half.
+        """
+        results = []
+        for cmd in (VERLDH, VERLDL):
+            buf = bytearray()
+            # 1. ADDSHFT + address
+            self._buf_goto_idle(buf)
+            self._buf_change_state(buf)
+            self._buf_shift_command(buf, ADDSHFT)
+            self._buf_change_state(buf)
+            addr = 1 << row
+            self._buf_shift_data_in(buf, addr, ADDR_SR_BITS)
+            # 2. VER/LDH or VER/LDL
+            self._buf_goto_idle(buf)
+            self._buf_change_state(buf)
+            self._buf_shift_command(buf, cmd)
+            self._buf_change_state(buf)
+            # Flush address + verify command, wait for data load
+            self.ftdi.write_data(bytes(buf))
+            time.sleep(T_PWV)
+            # 3. DATASHFT + read out 40 bits
+            buf2 = bytearray()
+            self._buf_goto_idle(buf2)
+            self._buf_change_state(buf2)
+            self._buf_shift_command(buf2, DATASHFT)
+            self._buf_change_state(buf2)
+            self._buf_shift_data_out(buf2, DATA_SR_HIGH)
+            bits = self._flush_and_read(buf2, DATA_SR_HIGH)
+            # Reconstruct value (LSB first)
+            val = 0
+            for i, b in enumerate(bits):
+                val |= (b << i)
+            results.append(val)
+        return (results[0], results[1])
+
+    def read_all_fast(self):
+        """Read all 102 rows using buffered MPSSE. Much faster."""
+        rows = []
+        for r in range(NUM_ROWS):
+            rows.append(self.read_row_fast(r))
+        return rows
+
     # ---- ISP State Machine Operations ----
 
     def enter_isp(self):
