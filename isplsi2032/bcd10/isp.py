@@ -161,13 +161,13 @@ class ISP2032:
         self._buf_clock(buf, mode_h=False, sdi_h=False)
 
     def _buf_change_state_data(self, buf):
-        """Append change_state_data (1 clock, mid-cycle switch) to buffer."""
+        """Append change_state_data (HH clock + pin setup, no extra clock)."""
         val_hh = nSRST | MODE | SDI
         val_lx = nSRST
-        buf.extend([0x80, val_hh & 0xFF, DIR])
-        buf.extend([0x80, (val_hh | SCLK) & 0xFF, DIR])
-        buf.extend([0x80, (val_lx | SCLK) & 0xFF, DIR])
-        buf.extend([0x80, val_lx & 0xFF, DIR])
+        buf.extend([0x80, val_hh & 0xFF, DIR])          # setup HH
+        buf.extend([0x80, (val_hh | SCLK) & 0xFF, DIR]) # rising edge
+        buf.extend([0x80, val_hh & 0xFF, DIR])           # falling edge
+        buf.extend([0x80, val_lx & 0xFF, DIR])           # set MODE=L (no clock)
 
     def _buf_shift_command(self, buf, cmd):
         """Append 5-bit command shift to buffer."""
@@ -285,15 +285,13 @@ class ISP2032:
 
     def change_state_data(self):
         """Advance to EXECUTE state for data shifting (ADDSHFT/DATASHFT).
-        ONE clock only — no extra LX, because LX in EXECUTE shifts data.
-        Uses mid-cycle MODE switch to avoid extra data shift.
+        ONE rising edge (HH = advance), then set MODE=L without clocking.
+        No extra LX clock — avoids shifting data register.
         """
-        val_hh = nSRST | MODE | SDI
-        val_lx = nSRST
-        self._pins(val_hh)              # Setup: MODE=H, SDI=H
-        self._pins(val_hh | SCLK)       # Rising edge → state advances
-        self._pins(val_lx | SCLK)       # Switch to MODE=L while SCLK high
-        self._pins(val_lx)              # Falling edge → in EXECUTE, ready for data
+        # HH clock: state advances on rising edge
+        self._clock(mode_h=True, sdi_h=True)
+        # Set MODE=L for data shifting — NO clock, just pin setup
+        self._pins(nSRST)  # MODE=L, SDI=L, SCLK=L
 
     def shift_command(self, cmd):
         """Shift a 5-bit ISP command in SHIFT state. LSB first."""
