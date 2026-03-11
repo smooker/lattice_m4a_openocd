@@ -4,14 +4,14 @@ Extracted from Lattice datasheet, July 1997 (15 pages).
 
 ## Variants
 
-| Variant | VCC | ISP Method | JTAG | Notes |
-|---------|-----|-----------|------|-------|
-| pLSI 2032 | 5V | OTP / legacy serial | No | 100 erase cycles |
-| ispLSI 2032 | 5V | Legacy serial (SDI/SDO/SCLK/MODE/ispEN) | No | 10,000 erase cycles |
-| ispLSI 2032A | 5V | Enhanced ISP | Likely | Later revision |
-| ispLSI 2032V | 3.3V | IEEE 1532 | Yes (IR=5) | Low voltage variant |
-| ispLSI 2032VL | 3.3V | IEEE 1532 | Yes (IR=5) | VL = Very Low power? |
-| ispLSI 2032E | 5V? | IEEE 1532 | Yes (IR=5) | Enhanced variant |
+| Variant        | VCC  | ISP Method                               | JTAG       | Notes               |
+|----------------|------|------------------------------------------|------------|---------------------|
+| pLSI 2032      | 5V   | OTP / legacy serial                      | No         | 100 erase cycles    |
+| ispLSI 2032    | 5V   | Legacy serial (SDI/SDO/SCLK/MODE/ispEN)  | No         | 10,000 erase cycles |
+| ispLSI 2032A   | 5V   | Enhanced ISP                             | Likely     | Later revision      |
+| ispLSI 2032V   | 3.3V | IEEE 1532                                | Yes (IR=5) | Low voltage variant |
+| ispLSI 2032VL  | 3.3V | IEEE 1532                                | Yes (IR=5) | VL = Very Low power |
+| ispLSI 2032E   | 5V?  | IEEE 1532                                | Yes (IR=5) | Enhanced variant    |
 
 **FT2232H is +5V tolerant** — all variants connect directly, no level shifter needed.
 - FT2232H outputs 3.3V HIGH → 5V CMOS accepts as HIGH (VIH >= 2.0V)
@@ -244,17 +244,17 @@ When ispEN is high (normal mode): SDI→IN0, SDO→IN1, SCLK→Y2, MODE→NC
 
 ## vs M4A3-64/32 Comparison
 
-| Parameter | ispLSI 2032 | M4A3-64/32 |
-|-----------|-------------|------------|
-| Macrocells | 32 (8x4) | 64 (4x16) |
-| Logic blocks | 8 GLBs | 4 PAL blocks |
-| Block structure | 18-in AND/OR/XOR | 33-in AND/OR |
-| I/O pins | 32 + 2 ded. | 32 |
-| Clocks | 3 dedicated (Y0/Y1/Y2) | 2 (CLK0/CLK1) |
-| VCC | 5V (original) / 3.3V (V/VL) | 3.3V |
-| IR length | 5 bits | 10 bits |
-| ISP | Legacy serial or IEEE 1532 | IEEE 1532 |
-| Interconnect | GRP (global) | CSM+ISM+OSM |
-| Technology | E2CMOS | E2CMOS |
-| Erase cycles | 10,000 | 10,000 |
-| fmax | up to 180 MHz | up to 250 MHz |
+| Parameter       | ispLSI 2032                  | M4A3-64/32    |
+|-----------------|------------------------------|---------------|
+| Macrocells      | 32 (8x4)                     | 64 (4x16)     |
+| Logic blocks    | 8 GLBs                       | 4 PAL blocks  |
+| Block structure | 18-in AND/OR/XOR             | 33-in AND/OR  |
+| I/O pins        | 32 + 2 ded.                  | 32            |
+| Clocks          | 3 dedicated (Y0/Y1/Y2)       | 2 (CLK0/CLK1) |
+| VCC             | 5V (original) / 3.3V (V/VL)  | 3.3V          |
+| IR length       | 5 bits                       | 10 bits       |
+| ISP             | Legacy serial or IEEE 1532    | IEEE 1532     |
+| Interconnect    | GRP (global)                 | CSM+ISM+OSM   |
+| Technology      | E2CMOS                       | E2CMOS        |
+| Erase cycles    | 10,000                       | 10,000        |
+| fmax            | up to 180 MHz                | up to 250 MHz |

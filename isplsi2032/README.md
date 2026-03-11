@@ -6,14 +6,14 @@ Available on donor PCBs in the lab.
 
 The ispLSI 2032 family has **multiple voltage variants**:
 
-| Variant | VCC | ISP | JTAG | FT2232H direct? | IDCODE |
-|---------|-----|-----|------|-----------------|--------|
-| ispLSI 2032 | **5V** | Hidden JTAG | **Yes** | YES (5V tolerant) | TBD |
-| ispLSI 2032A | **5V** | Hidden JTAG | **Yes** | YES (5V tolerant) | TBD |
-| ispLSI 2032V | **3.3V** | IEEE 1532 | **Yes** (IR=5) | YES | 0x00301043 |
-| ispLSI 2032VL | **3.3V** | IEEE 1532 | **Yes** (IR=5) | YES | TBD |
-| ispLSI 2032E | **5V** | IEEE 1532 | **Yes** (IR=5) | YES (5V tolerant) | 0x00A4E043 |
-| ispLSI 2032VE | **3.3V** | IEEE 1532 | **Yes** (IR=5) + BScan | YES | 0x10301043 |
+| Variant        | VCC      | ISP         | JTAG                   | FT2232H direct?   | IDCODE     |
+|----------------|----------|-------------|------------------------|--------------------|------------|
+| ispLSI 2032    | **5V**   | Hidden JTAG | **Yes**                | YES (5V tolerant)  | TBD        |
+| ispLSI 2032A   | **5V**   | Hidden JTAG | **Yes**                | YES (5V tolerant)  | TBD        |
+| ispLSI 2032V   | **3.3V** | IEEE 1532   | **Yes** (IR=5)         | YES                | 0x00301043 |
+| ispLSI 2032VL  | **3.3V** | IEEE 1532   | **Yes** (IR=5)         | YES                | TBD        |
+| ispLSI 2032E   | **5V**   | IEEE 1532   | **Yes** (IR=5)         | YES (5V tolerant)  | 0x00A4E043 |
+| ispLSI 2032VE  | **3.3V** | IEEE 1532   | **Yes** (IR=5) + BScan | YES                | 0x10301043 |
 
 **FT2232H is +5V tolerant on all I/O** — direct connection to ALL variants, no level shifter!
 - "Legacy ISP" is actually JTAG with different pin names (Lattice patent US5412260A)
@@ -113,16 +113,16 @@ openocd -f ../../ft2232h/ft2232h_smooker.cfg \
 
 ## vs M4A3-64/32
 
-| | ispLSI2032 | M4A3-64/32 |
-|--|-----------|------------|
-| Macrocells | 32 (8x4) | 64 (4x16) |
-| IR length | 5 bits | 10 bits |
-| Blocks | 8 GLB x 4 MC | 4 PAL x 16 MC |
-| GLB inputs | 18 | 33 |
-| VCC | 5V or 3.3V (V/VL) | 3.3V |
-| ISP | Legacy or IEEE 1532 | IEEE 1532 |
-| Fuse access | TBD | Fully decoded |
-| fmax | 180 MHz | 250 MHz |
+|             | ispLSI2032          | M4A3-64/32     |
+|-------------|---------------------|----------------|
+| Macrocells  | 32 (8x4)           | 64 (4x16)      |
+| IR length   | 5 bits              | 10 bits        |
+| Blocks      | 8 GLB x 4 MC       | 4 PAL x 16 MC  |
+| GLB inputs  | 18                  | 33             |
+| VCC         | 5V or 3.3V (V/VL)  | 3.3V           |
+| ISP         | Legacy or IEEE 1532 | IEEE 1532      |
+| Fuse access | TBD                 | Fully decoded  |
+| fmax        | 180 MHz             | 250 MHz        |
 
 ## TODO
 

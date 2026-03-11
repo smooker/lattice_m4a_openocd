@@ -14,16 +14,16 @@ AliExpress "FT2232HL Board" by popctrl@163.com (EYEWINK brand).
 
 ## JTAG Connector (CN4, 20-pin ARM standard)
 
-| Pin | Signal |
-|-----|--------|
-| 3 | TRST |
-| 5 | TDI |
-| 7 | TMS / SWIO |
-| 9 | TCK / SWCK |
-| 11 | RTCK |
-| 13 | TDO |
-| 15 | RESET |
-| 17 | DBGRQ |
+| Pin | Signal     |
+|-----|------------|
+|   3 | TRST       |
+|   5 | TDI        |
+|   7 | TMS / SWIO |
+|   9 | TCK / SWCK |
+|  11 | RTCK       |
+|  13 | TDO        |
+|  15 | RESET      |
+|  17 | DBGRQ      |
 
 ## Pin Headers (bottom edge)
 
@@ -43,10 +43,7 @@ FT2232H datasheet states: "+1.8V (chip core) and +3.3V I/O interfacing (+5V Tole
 - 74HC573 buffers add ESD protection but are NOT level shifters
 - **Direct connection to both 3.3V and 5V targets — no level shifter needed**
 
-## Source
-
-- [AliExpress listing](https://www.aliexpress.com/item/32975940318.html)
-- Photos: `ft2232h_board_{1,2,3}.jpg`
+![FT2232H Board](ft2232h_board_1.jpg)
 
 ## OpenOCD Config
 
