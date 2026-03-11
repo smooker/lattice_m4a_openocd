@@ -8,7 +8,7 @@ The ispLSI 2032 family has **multiple voltage variants**:
 
 | Variant        | VCC      | ISP         | JTAG                   | FT2232H direct?   | IDCODE     |
 |----------------|----------|-------------|------------------------|--------------------|------------|
-| ispLSI 2032    | **5V**   | Hidden JTAG | **Yes**                | YES (5V tolerant)  | TBD        |
+| ispLSI 2032    | **5V**   | Hidden JTAG | **Yes**                | YES (5V tolerant)  | None (0x00000005) |
 | ispLSI 2032A   | **5V**   | Hidden JTAG | **Yes**                | YES (5V tolerant)  | TBD        |
 | ispLSI 2032V   | **3.3V** | IEEE 1532   | **Yes** (IR=5)         | YES                | 0x00301043 |
 | ispLSI 2032VL  | **3.3V** | IEEE 1532   | **Yes** (IR=5)         | YES                | TBD        |
@@ -76,7 +76,26 @@ From BSDL (bsdl.info), IR length = 5 bits:
 | ISC_PROGRAM_SECURITY | 01001 | Set security fuse |
 | IDCODE | 10110 | Read JTAG IDCODE |
 
-IDCODE: To be determined from device scan (not yet available).
+## JTAG Scan Results (plain ispLSI 2032-135LT44)
+
+First successful JTAG communication on 2026-03-11 via FT2232H + OpenOCD.
+
+| Test                  | Result                                       |
+|-----------------------|----------------------------------------------|
+| Scan chain            | 1 TAP found                                  |
+| BYPASS (IR=0xFF)      | OK — 1-bit register, returns 0               |
+| IDCODE (IR=0x16)      | 0x00000005 — **no standard IDCODE**          |
+| IR capture value      | 0x05 (irlen 8) or 0x05 (irlen 5)            |
+| ISC_ENABLE (IR=0x15)  | Accepted (returned 0x05 = previous IR capture)|
+| USB stability         | Marginal — loose wires cause disconnects     |
+
+**Conclusion**: Plain ispLSI 2032 has **hidden JTAG** that responds to scan chain
+operations.  No standard IEEE 1149.1 IDCODE is present.  ISP instructions
+from the V/VL/E BSDL may partially work — further probing needed.
+
+**IR length**: Likely 5 bits (same as V/VL/E); irlen 8 works with OpenOCD
+but the actual register appears to be 5 bits (IR capture = 0x05 = 0b00101,
+where bits 0-1 = 01 is standard JTAG capture signature).
 
 ## JTAG Pins (V/VL/E variants)
 
@@ -163,7 +182,10 @@ openocd -f ../../ft2232h/ft2232h_smooker.cfg \
 - [x] **Identify exact variant**: ispLSI 2032-135LT44 (5V, 137MHz, plain 2032)
 - [x] Desolder from donor PCB (Cognex TURBO ACR/M/ALRM 2.0)
 - [x] Mount on TQFP44→DIP adapter
-- [ ] **JTAG scan — will it return IDCODE?** (the bet!)
+- [x] **JTAG scan** — chain works, BYPASS OK, **no standard IDCODE** (smooker wins the bet!)
+- [ ] Determine actual IR length (5 or 8?)
+- [ ] Probe all IR opcodes — find which ISP instructions work
+- [ ] Read fuse map via ISC_READ (if security bit allows)
 - [ ] Download BSDL from bsdl.info (needs CAPTCHA)
 - [ ] Decode full ISC protocol (register sizes TBD)
 - [ ] Determine fuse geometry
