@@ -109,15 +109,15 @@ The adapter has 64 holes but only 44 are used.  Each side has a gap of 5 unused 
 
 ### FT2232H → Adapter Wiring (7 wires)
 
-| Adapter holes | Signal        | FT2232H    |
-|---------------|---------------|------------|
-|  6, 38        | VCC           | +5V        |
-|  7            | ispEN         | GND        |
-|  8            | SDI (TDI)     | ADBUS1     |
-| 22, 54        | GND           | GND        |
-| 23            | SDO (TDO)    | ADBUS2     |
-| 37            | SCLK (TCK)   | ADBUS0     |
-| 40            | MODE (TMS)   | ADBUS3     |
+| Chip pin | Adapter | Signal        | FT2232H    |
+|----------|---------|---------------|------------|
+|  6, 28   |  6, 38  | VCC           | +5V        |
+|  7       |  7      | ispEN         | GND        |
+|  8       |  8      | SDI (TDI)     | ADBUS1     |
+| 17, 39   | 22, 54  | GND           | GND        |
+| 18       | 23      | SDO (TDO)    | ADBUS2     |
+| 27       | 37      | SCLK (TCK)   | ADBUS0     |
+| 30       | 40      | MODE (TMS)   | ADBUS3     |
 
 ## OpenOCD Quick Test (JTAG variants only)
 
