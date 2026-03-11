@@ -432,11 +432,14 @@ class ISP2032:
         self._load_address(row)
 
         # 2. DATASHFT — shift in HIGH order data
+        #    The SR has 2 positions for dedicated input pins (I0, I1) at the
+        #    LSB end — not programmable fuses. Shift data left by 2 to align
+        #    fuse bits with their correct SR positions.
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(DATASHFT)
         self.change_state()                      # -> EXECUTE
-        self._shift_data_in(high_40bits, DATA_SR_HIGH)
+        self._shift_data_in((high_40bits << 2) & 0xFFFFFFFFFF, DATA_SR_HIGH)
 
         # 3. PRGMH — program high order
         self.goto_idle()
@@ -445,12 +448,12 @@ class ISP2032:
         self.change_state()                      # -> EXECUTE
         self._execute(wait_time=T_PWP)           # trigger program + wait 200ms
 
-        # 4. DATASHFT — shift in LOW order data
+        # 4. DATASHFT — shift in LOW order data (same 2-bit alignment)
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(DATASHFT)
         self.change_state()                      # -> EXECUTE
-        self._shift_data_in(low_40bits, DATA_SR_LOW)
+        self._shift_data_in((low_40bits << 2) & 0xFFFFFFFFFF, DATA_SR_LOW)
 
         # 5. PRGML — program low order
         self.goto_idle()
