@@ -214,11 +214,11 @@ class ISP2032:
             self._buf_change_state_data(buf)        # data shift — no extra clock!
             addr = 1 << row
             self._buf_shift_data_in(buf, addr, ADDR_SR_BITS)
-            # 2. VER/LDH or VER/LDL (execute command — 2-clock OK)
+            # 2. VER/LDH or VER/LDL
             self._buf_goto_idle(buf)
             self._buf_change_state(buf)
             self._buf_shift_command(buf, cmd)
-            self._buf_change_state(buf)             # 2-clock triggers verify/load
+            self._buf_change_state_data(buf)        # no LX — avoid data shift
             # Flush address + verify command, wait for data load
             self.ftdi.write_data(bytes(buf))
             time.sleep(T_PWV)
@@ -384,8 +384,8 @@ class ISP2032:
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(VERLDH)
-        self.change_state()                      # -> EXECUTE (LX triggers load)
-        time.sleep(T_PWV)                        # Just wait — NO extra clock!
+        self.change_state_data()                 # -> EXECUTE (no LX — avoid data shift)
+        time.sleep(T_PWV)                        # Wait for load from E²CMOS
 
         # 3. DATASHFT — shift out HIGH
         self.goto_idle()
@@ -398,8 +398,8 @@ class ISP2032:
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(VERLDL)
-        self.change_state()                      # -> EXECUTE (LX triggers load)
-        time.sleep(T_PWV)                        # Just wait — NO extra clock!
+        self.change_state_data()                 # -> EXECUTE (no LX — avoid data shift)
+        time.sleep(T_PWV)                        # Wait for load from E²CMOS
 
         # 5. DATASHFT — shift out LOW
         self.goto_idle()
