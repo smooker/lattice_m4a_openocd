@@ -156,13 +156,18 @@ class ISP2032:
         self._buf_clock(buf, mode_h=True, sdi_h=False)
 
     def _buf_change_state(self, buf):
-        """Append change_state: ONE clock, HH on rise, LX on fall."""
+        """Append change_state (2 clocks: HH + LX) to buffer."""
+        self._buf_clock(buf, mode_h=True, sdi_h=True)
+        self._buf_clock(buf, mode_h=False, sdi_h=False)
+
+    def _buf_change_state_data(self, buf):
+        """Append change_state_data (1 clock, mid-cycle switch) to buffer."""
         val_hh = nSRST | MODE | SDI
         val_lx = nSRST
-        buf.extend([0x80, val_hh & 0xFF, DIR])          # setup HH
-        buf.extend([0x80, (val_hh | SCLK) & 0xFF, DIR]) # rising edge
-        buf.extend([0x80, (val_lx | SCLK) & 0xFF, DIR]) # switch to LX
-        buf.extend([0x80, val_lx & 0xFF, DIR])           # falling edge
+        buf.extend([0x80, val_hh & 0xFF, DIR])
+        buf.extend([0x80, (val_hh | SCLK) & 0xFF, DIR])
+        buf.extend([0x80, (val_lx | SCLK) & 0xFF, DIR])
+        buf.extend([0x80, val_lx & 0xFF, DIR])
 
     def _buf_shift_command(self, buf, cmd):
         """Append 5-bit command shift to buffer."""
@@ -206,14 +211,14 @@ class ISP2032:
             self._buf_goto_idle(buf)
             self._buf_change_state(buf)
             self._buf_shift_command(buf, ADDSHFT)
-            self._buf_change_state(buf)
+            self._buf_change_state_data(buf)        # data shift — no extra clock!
             addr = 1 << row
             self._buf_shift_data_in(buf, addr, ADDR_SR_BITS)
-            # 2. VER/LDH or VER/LDL
+            # 2. VER/LDH or VER/LDL (execute command — 2-clock OK)
             self._buf_goto_idle(buf)
             self._buf_change_state(buf)
             self._buf_shift_command(buf, cmd)
-            self._buf_change_state(buf)
+            self._buf_change_state(buf)             # 2-clock triggers verify/load
             # Flush address + verify command, wait for data load
             self.ftdi.write_data(bytes(buf))
             time.sleep(T_PWV)
@@ -222,7 +227,7 @@ class ISP2032:
             self._buf_goto_idle(buf2)
             self._buf_change_state(buf2)
             self._buf_shift_command(buf2, DATASHFT)
-            self._buf_change_state(buf2)
+            self._buf_change_state_data(buf2)       # data shift — no extra clock!
             self._buf_shift_data_out(buf2, DATA_SR_HIGH)
             bits = self._flush_and_read(buf2, DATA_SR_HIGH)
             # Reconstruct value (LSB first)
@@ -271,19 +276,24 @@ class ISP2032:
 
     def change_state(self):
         """Advance to next state: IDLE->SHIFT or SHIFT->EXECUTE.
-        ONE clock: HH on rising edge (state advances), then switch to LX
-        before falling edge. NOT two clocks — extra LX clock would shift data!
+        Two clocks: HH (advance) + LX (settle/execute trigger).
+        The LX clock acts as execution trigger for commands like UBE/PRGM.
+        For data shift operations, use change_state_data() instead.
+        """
+        self._clock(mode_h=True, sdi_h=True)    # HH -> advance
+        self._clock(mode_h=False, sdi_h=False)   # LX -> settle/execute
 
-        From Data Book p.8-32:
-          MODE=H, SDI=H → wait tsu → SCLK↑ (advance)
-          MODE=L, SDI=L → wait tclkh → SCLK↓ (settle)
+    def change_state_data(self):
+        """Advance to EXECUTE state for data shifting (ADDSHFT/DATASHFT).
+        ONE clock only — no extra LX, because LX in EXECUTE shifts data.
+        Uses mid-cycle MODE switch to avoid extra data shift.
         """
         val_hh = nSRST | MODE | SDI
         val_lx = nSRST
         self._pins(val_hh)              # Setup: MODE=H, SDI=H
         self._pins(val_hh | SCLK)       # Rising edge → state advances
         self._pins(val_lx | SCLK)       # Switch to MODE=L while SCLK high
-        self._pins(val_lx)              # Falling edge → settled in new state
+        self._pins(val_lx)              # Falling edge → in EXECUTE, ready for data
 
     def shift_command(self, cmd):
         """Shift a 5-bit ISP command in SHIFT state. LSB first."""
@@ -356,7 +366,7 @@ class ISP2032:
         self.goto_idle()
         self.change_state()                      # IDLE -> SHIFT
         self.shift_command(ADDSHFT)
-        self.change_state()                      # SHIFT -> EXECUTE
+        self.change_state_data()                 # SHIFT -> EXECUTE (no extra shift!)
         self._shift_data_in(addr, ADDR_SR_BITS)  # 102-bit address
 
     def read_row(self, row):
@@ -383,21 +393,21 @@ class ISP2032:
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(DATASHFT)
-        self.change_state()                      # -> EXECUTE
+        self.change_state_data()                 # -> EXECUTE (no extra shift!)
         data_h = self._shift_data_out(DATA_SR_HIGH)
 
         # 4. VER/LDL — load low order data
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(VERLDL)
-        self.change_state()                      # -> EXECUTE
+        self.change_state()                      # -> EXECUTE (2-clock OK, triggers load)
         self._execute(wait_time=T_PWV)
 
         # 5. DATASHFT — shift out LOW
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(DATASHFT)
-        self.change_state()                      # -> EXECUTE
+        self.change_state_data()                 # -> EXECUTE (no extra shift!)
         data_l = self._shift_data_out(DATA_SR_LOW)
 
         return (data_h, data_l)
@@ -426,28 +436,28 @@ class ISP2032:
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(DATASHFT)
-        self.change_state()                      # -> EXECUTE
+        self.change_state_data()                 # -> EXECUTE (no extra shift!)
         self._shift_data_in(high_40bits, DATA_SR_HIGH)
 
         # 3. PRGMH — program high order
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(PRGMH)
-        self.change_state()                      # -> EXECUTE
+        self.change_state()                      # -> EXECUTE (2-clock OK, triggers program)
         self._execute(wait_time=T_PWP)           # Wait 200ms
 
         # 4. DATASHFT — shift in LOW order data
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(DATASHFT)
-        self.change_state()                      # -> EXECUTE
+        self.change_state_data()                 # -> EXECUTE (no extra shift!)
         self._shift_data_in(low_40bits, DATA_SR_LOW)
 
         # 5. PRGML — program low order
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(PRGML)
-        self.change_state()                      # -> EXECUTE
+        self.change_state()                      # -> EXECUTE (2-clock OK, triggers program)
         self._execute(wait_time=T_PWP)           # Wait 200ms
 
     def write_all(self, rows):
@@ -482,7 +492,7 @@ class ISP2032:
         self.goto_idle()
         self.change_state()                      # IDLE -> SHIFT
         self.shift_command(FLOWTHRU)
-        self.change_state()                      # SHIFT -> EXECUTE
+        self.change_state_data()                 # -> EXECUTE (data shift, no extra clock)
         # In EXECUTE with FLOWTHRU: SDI passes to SDO
         test_val = 0xA5
         result = 0
