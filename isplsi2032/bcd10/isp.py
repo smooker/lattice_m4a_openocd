@@ -83,9 +83,10 @@ DEVICE_ID_BITS = 8
 CMD_BITS = 5
 NUM_ROWS = 102
 
-# Erased state: all 1s
-ERASED_HIGH = (1 << DATA_SR_HIGH) - 1  # 0x3FFFFFFFFF
-ERASED_LOW  = (1 << DATA_SR_LOW) - 1   # 0x3FFFFFFFFF
+# Erased state: top 2 bits always 0, lower 38 bits = 1
+# Chip reads 0x3FFFFFFFFF (not 0xFFFFFFFFFF) — only 38 of 40 SR bits are fuses
+ERASED_HIGH = 0x3FFFFFFFFF
+ERASED_LOW  = 0x3FFFFFFFFF
 
 
 class ISP2032:

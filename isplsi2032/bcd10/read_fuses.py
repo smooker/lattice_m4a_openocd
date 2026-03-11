@@ -44,7 +44,7 @@ def write_txt(filename, rows):
         f.write(f"#\n")
         for r, (h, l) in enumerate(rows):
             marker = ""
-            erased_val = (1 << 40) - 1
+            erased_val = 0x3FFFFFFFFF
             if h != erased_val or l != erased_val:
                 marker = "  *"  # Mark programmed rows
             f.write(f"{r:3d}  0x{h:010X}  0x{l:010X}{marker}\n")
@@ -85,7 +85,7 @@ def main():
         print(f"\nReading {NUM_ROWS} rows...")
         t0 = time.time()
         rows = []
-        erased_val = (1 << 40) - 1
+        erased_val = 0x3FFFFFFFFF
         programmed_count = 0
 
         for r in range(NUM_ROWS):
