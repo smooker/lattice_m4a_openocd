@@ -384,8 +384,8 @@ class ISP2032:
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(VERLDH)
-        self.change_state()                      # -> EXECUTE
-        self._execute(wait_time=T_PWV)           # Load data, wait tpwv
+        self.change_state()                      # -> EXECUTE (LX triggers load)
+        time.sleep(T_PWV)                        # Just wait — NO extra clock!
 
         # 3. DATASHFT — shift out HIGH
         self.goto_idle()
@@ -398,8 +398,8 @@ class ISP2032:
         self.goto_idle()
         self.change_state()                      # -> SHIFT
         self.shift_command(VERLDL)
-        self.change_state()                      # -> EXECUTE (2-clock OK, triggers load)
-        self._execute(wait_time=T_PWV)
+        self.change_state()                      # -> EXECUTE (LX triggers load)
+        time.sleep(T_PWV)                        # Just wait — NO extra clock!
 
         # 5. DATASHFT — shift out LOW
         self.goto_idle()
