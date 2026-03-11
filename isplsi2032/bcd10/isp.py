@@ -156,9 +156,13 @@ class ISP2032:
         self._buf_clock(buf, mode_h=True, sdi_h=False)
 
     def _buf_change_state(self, buf):
-        """Append change_state (HH + LX settle) to buffer."""
-        self._buf_clock(buf, mode_h=True, sdi_h=True)
-        self._buf_clock(buf, mode_h=False, sdi_h=False)
+        """Append change_state: ONE clock, HH on rise, LX on fall."""
+        val_hh = nSRST | MODE | SDI
+        val_lx = nSRST
+        buf.extend([0x80, val_hh & 0xFF, DIR])          # setup HH
+        buf.extend([0x80, (val_hh | SCLK) & 0xFF, DIR]) # rising edge
+        buf.extend([0x80, (val_lx | SCLK) & 0xFF, DIR]) # switch to LX
+        buf.extend([0x80, val_lx & 0xFF, DIR])           # falling edge
 
     def _buf_shift_command(self, buf, cmd):
         """Append 5-bit command shift to buffer."""
@@ -267,10 +271,19 @@ class ISP2032:
 
     def change_state(self):
         """Advance to next state: IDLE->SHIFT or SHIFT->EXECUTE.
-        MODE=H, SDI=H + clock (HH = advance), then MODE=L settle clock.
+        ONE clock: HH on rising edge (state advances), then switch to LX
+        before falling edge. NOT two clocks — extra LX clock would shift data!
+
+        From Data Book p.8-32:
+          MODE=H, SDI=H → wait tsu → SCLK↑ (advance)
+          MODE=L, SDI=L → wait tclkh → SCLK↓ (settle)
         """
-        self._clock(mode_h=True, sdi_h=True)    # HH -> advance
-        self._clock(mode_h=False, sdi_h=False)   # LX -> settle
+        val_hh = nSRST | MODE | SDI
+        val_lx = nSRST
+        self._pins(val_hh)              # Setup: MODE=H, SDI=H
+        self._pins(val_hh | SCLK)       # Rising edge → state advances
+        self._pins(val_lx | SCLK)       # Switch to MODE=L while SCLK high
+        self._pins(val_lx)              # Falling edge → settled in new state
 
     def shift_command(self, cmd):
         """Shift a 5-bit ISP command in SHIFT state. LSB first."""
