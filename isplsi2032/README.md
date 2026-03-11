@@ -94,7 +94,12 @@ Standard 4-wire JTAG: TCK, TDI, TDO, TMS
 
 ## TQFP44 → DIP Adapter Wiring
 
-Universal TQFP 32~64pin adapter (0.8mm pitch).  Pin 1 is **top-left** on TQFP44.
+Generic Chinese TQFP adapter (~1 лв).  Dual-sided PCB:
+- **Front (0.8mm pitch)**: TQFP 32–64 pin
+- **Back (0.5mm pitch)**: TQFP up to 100 pin
+
+**No pinout table is provided** — user must create their own mapping for each chip!
+Pin 1 is **top-left** on TQFP44.
 
 ![TQFP44 adapter](media/tqfp44_adapter.jpg)
 
