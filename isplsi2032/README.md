@@ -92,6 +92,35 @@ Standard 4-wire JTAG: TCK, TDI, TDO, TMS
 | MODE | 30 | ISP state control | NC |
 | SCLK/Y2 | 27 | Serial clock | Clock Y2 |
 
+## TQFP44 → DIP Adapter Wiring
+
+Universal TQFP 32~64pin adapter (0.8mm pitch).  Pin 1 is **top-left** on TQFP44.
+
+![TQFP44 adapter](media/tqfp44_adapter.jpg)
+
+The adapter has 64 holes but only 44 are used.  Each side has a gap of 5 unused holes:
+
+| Chip pins | Adapter holes | Offset |
+|-----------|---------------|--------|
+|  1 – 11   |  1 – 11       | +0     |
+| 12 – 22   | 17 – 27       | +5     |
+| 23 – 33   | 33 – 43       | +10    |
+| 34 – 44   | 49 – 59       | +15    |
+
+### FT2232H → Adapter Wiring
+
+| Chip pin | Adapter hole | Signal        | FT2232H    |
+|----------|-------------|---------------|------------|
+|  6       |  6          | VCC           | +5V        |
+|  7       |  7          | ispEN         | GND        |
+|  8       |  8          | SDI (TDI)     | ADBUS1     |
+| 17       | 22          | GND           | GND        |
+| 18       | 23          | SDO (TDO)     | ADBUS2     |
+| 27       | 37          | SCLK (TCK)    | ADBUS0     |
+| 28       | 38          | VCC           | +5V        |
+| 30       | 40          | MODE (TMS)    | ADBUS3     |
+| 39       | 54          | GND           | GND        |
+
 ## OpenOCD Quick Test (JTAG variants only)
 
 ```bash
@@ -126,10 +155,10 @@ openocd -f ../../ft2232h/ft2232h_smooker.cfg \
 
 ## TODO
 
-- [ ] **Identify exact variant** on donor PCBs (read chip marking!)
-- [ ] Desolder from donor PCB
-- [ ] JTAG scan to get IDCODE (if V/VL/E variant)
+- [x] **Identify exact variant**: ispLSI 2032-135LT44 (5V, 137MHz, plain 2032)
+- [x] Desolder from donor PCB (Cognex TURBO ACR/M/ALRM 2.0)
+- [x] Mount on TQFP44→DIP adapter
+- [ ] **JTAG scan — will it return IDCODE?** (the bet!)
 - [ ] Download BSDL from bsdl.info (needs CAPTCHA)
 - [ ] Decode full ISC protocol (register sizes TBD)
 - [ ] Determine fuse geometry
-- [ ] If 5V variant: build 5V↔3.3V level shifter for FTDI
