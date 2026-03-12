@@ -43,18 +43,17 @@ Periodicity:      7,8 ... 17,18 ... 27,28 ... 37
 ```
 Exception: Row 56 HIGH half — only [7,8,17,18,27,28] (missing bit 37)
 
-### Fuse map structure hypothesis
+### Fuse map structure hypothesis (v1.3, SUPERSEDED by v1.5)
 ```
-Rows  0-1     : normal fuses (GLB/GRP?) — 2 rows
-Row   2       : ARCHITECTURE config (global) — 1 row
-Rows  3-42    : normal fuses (GLB AND array? GRP?) — 40 rows
-Rows 43-58    : ARCHITECTURE config (ORP/IO) — 16 rows (= 2 ORPs × 8 GLBs?)
-Rows 59-98    : normal fuses (GLB AND array? GRP?) — 40 rows
-Row  99       : ARCHITECTURE config (global) — 1 row
+OLD hypothesis (WRONG — based on scan only):
+Rows  0-1     : normal fuses — 2 rows
+Row   2       : ARCHITECTURE config — 1 row
+Rows  3-42    : normal fuses — 40 rows
+Rows 43-58    : ARCHITECTURE config — 16 rows
+Rows 59-98    : normal fuses — 40 rows
+Row  99       : ARCHITECTURE config — 1 row
 Rows 100-101  : normal fuses — 2 rows
 ```
-Normal rows: 84 (= 8 GLBs × 10 rows + 4 GRP rows? or 2×40 + 4?)
-Arch rows: 18 (= 16 ORP + 2 global config)
 
 ### Stuck bits = NOT fuses
 The 7 stuck positions per half are NOT E²CMOS fuses. They are likely:
@@ -106,6 +105,7 @@ Bit [27,28] → XnMFUSE0/1      (XOR mux) or RST0/1
 Bit [37]    → SLEWFUSE         (slew rate)
 Row 56 HIGH missing [37] = Y2/SCLK pin (no output buffer → no SLEWFUSE)
 ```
+NOTE: stuck bits are on GRP rows (not ARCH as first assumed) — see v1.5 results.
 
 ### AND array structure (from SDF)
 - 20 PTs per GLB, each 36 fuses (18 inputs × true+complement)
@@ -117,13 +117,60 @@ Row 56 HIGH missing [37] = Y2/SCLK pin (no output buffer → no SLEWFUSE)
 - 18 inputs × 4:1 mux (2 bits) × 8 GLBs = 288 CSM fuses
 - AND array: 20 PTs × 36 × 8 GLBs = 5,760 fuses
 
+## SELECTIVE ERASE RESULTS (v1.5, 2026-03-12)
+
+### ARCHBE erased 14 rows: [0,1,2,3,4,5,6, 95,96,97,98,99,100,101]
+- Two groups of 7 at each END of the array
+- NOT rows 43-58 as hypothesized!
+- These are the global config rows (ISP, SECURITY, RESET, CLOCK, POWER, etc.)
+
+### GRPBE erased 21 rows: [43-58, 67,76,85,97,101] + 6 partial [66,81,84,94,96,100]
+- Rows 43-58 are GRP! The stuck bits [7,8,17,18,27,28,37] are GRP MUX readback
+- Scattered rows beyond 58: possibly GRP crossbar connections to specific GLBs
+
+### GLBBE erased 83 rows: [3-50, 67-101] (most of the chip)
+- Includes the main AND array for all 8 GLBs
+- Overlaps with both ARCHBE and GRPBE sections
+
+### 8 mystery rows: [59,60,61,62,63,64,65,66] — NOT erased by anything!
+- Could be UES (160 bits = 2 rows) — but that's only 2, not 8
+- Could be hardwired / read-only configuration
+- Needs separate investigation
+
+### Revised fuse map (v1.5):
+```
+Rows  0-6    : ARCHITECTURE (global config)     7 rows  ← ARCHBE
+Rows  7-42   : GLB AND array                   36 rows  ← GLBBE only
+Rows 43-58   : GRP routing pool                16 rows  ← GRPBE (has MUX readback bits)
+Rows 59-66   : ??? MYSTERY — not erased by any  8 rows  ← UES? hardwired?
+Rows 67-94   : GLB AND array                   28 rows  ← GLBBE only
+Rows 95-101  : ARCHITECTURE (global config)     7 rows  ← ARCHBE
+```
+
+### Erase section overlaps (unexpected!):
+```
+ARCH ∩ GRP  = [97, 101]
+ARCH ∩ GLB  = [3,4,5,6, 95,96,97,98,99,100,101]
+GRP  ∩ GLB  = [43-50, 67,76,85,97,101]
+Union       = 94 of 102 rows
+Uncovered   = [59,60,61,62,63,64,65,66]
+```
+
+### Anomalies to investigate:
+1. Row 101 MISMATCH during GRPBE write — unreliable data for that row?
+2. GLBBE readback shows 0xFFFFFFFFFF (bits 38,39 = 1) — should be 0x3FFFFFFFFF
+3. Row 50 reads 0x0000000000 in GLBBE spot-check — stuck bits disappeared?!
+4. Significant erase overlaps — sections share rows
+5. Partial erases (half-erased rows in GRPBE) — half H=0, half L=erased
+
 ## Full documentation
 → See `ispLSI2032_FUSEMAP_RE.md` in this directory
 
 ## Next steps
-- [ ] **ARCHBE selective erase** — confirm rows 2, 43-58, 99 are arch section
-- [ ] **GRPBE selective erase** — which normal rows are GRP?
-- [ ] **GLBBE selective erase** — which normal rows are GLB?
-- [ ] Write arch rows with stuck bits masked (set those 7 positions to 1)
+- [x] ~~Selective erase test (ARCHBE/GRPBE/GLBBE)~~ — DONE (v1.5)
+- [ ] Investigate mystery rows 59-66 (try UES read/write commands PROGUES/VERUES)
+- [ ] Re-run scan on rows 59-66 after fresh UBE to check if they're writable
+- [ ] Investigate 0xFFFFFFFFFF readback after GLBBE (bits 38,39 should be 0)
+- [ ] Investigate partial erases in GRPBE (half-erased rows)
 - [ ] Walking-0 on normal rows to map AND array / GRP structure
 - [ ] Compile something in ispLEVER for 2032 when Gentoo32 is available
