@@ -1,0 +1,31 @@
+FT2232H connected.
+MPSSE clock overridden to 80000 Hz
+Device ID: 0x15
+FLOWTHRU:  0xA5 OK
+============================================================
+PHASE 1: Write/Read Round-Trip Verification
+============================================================
+
+Step 1: Bulk erase...
+  Done.
+
+Step 2: Verify erased state (spot check rows 0, 50, 101)...
+  All erased. OK.
+
+Step 3: Write/read test patterns...
+  Row   0: alternating 10/01 (H=0x2AAAAAAAAA L=0x1555555555)
+         PASS
+  Row   1: alternating 01/10 (H=0x1555555555 L=0x2AAAAAAAAA)
+         PASS
+  Row   2: single bit low (H=0x0000000001 L=0x0000000001)
+         FAIL: got H=0x2018060181 L=0x2018060181
+  Row   3: single bit high (H=0x2000000000 L=0x2000000000)
+         PASS
+  Row   4: all erased (no-op) (H=0x3FFFFFFFFF L=0x3FFFFFFFFF)
+         PASS
+  Row   5: all programmed (H=0x0000000000 L=0x0000000000)
+         PASS
+
+Step 4: Multi-row write (rows 10-19)...
+
+Interrupted. Cleaning up...

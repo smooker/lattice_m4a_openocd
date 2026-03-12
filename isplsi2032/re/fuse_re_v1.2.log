@@ -1,0 +1,26 @@
+FT2232H connected.
+Device ID: 0x15
+FLOWTHRU:  0xA5 OK
+============================================================
+DIAGNOSTIC: Row isolation — row 2 failure analysis
+============================================================
+
+--- Test A: single-bit-low on rows 0-5 (isolated, fresh erase each) ---
+  Row 0: PASS
+  Row 1: PASS
+  Row 2: FAIL  read H=0x2018060181 L=0x2018060181
+  Row 3: PASS
+  Row 4: PASS
+  Row 5: PASS
+
+--- Test B: phase1 sequence (row0 alt, erase, row1 alt, erase, row2 single-bit) ---
+  Row 0 alternating 10/01: PASS
+  Row 1 alternating 01/10: PASS
+  Row 2 single-bit-low:    FAIL  read H=0x2018060181 L=0x2018060181
+
+--- Test C: row0 alt + row1 alt (NO erase between) then erase + row2 ---
+  Row 2 single-bit-low:    FAIL  read H=0x2018060181 L=0x2018060181
+
+============================================================
+DIAGNOSTIC COMPLETE
+============================================================

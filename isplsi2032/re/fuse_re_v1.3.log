@@ -1,0 +1,110 @@
+FT2232H connected.
+Device ID: 0x15
+FLOWTHRU:  0xA5 OK
+============================================================
+SCAN: All 102 rows with pattern 0x0000000001
+============================================================
+  One bulk erase, then write+read each row.
+  Failing bits = non-programmable (architecture/config).
+
+  Row   2: FAIL
+    read H=0x2018060181 L=0x2018060181
+    XOR  H=0x2018060180 L=0x2018060180
+    stuck H bits: [7, 8, 17, 18, 27, 28, 37]
+    stuck L bits: [7, 8, 17, 18, 27, 28, 37]
+  Row  43: FAIL
+    read H=0x2018060181 L=0x2018060181
+    XOR  H=0x2018060180 L=0x2018060180
+    stuck H bits: [7, 8, 17, 18, 27, 28, 37]
+    stuck L bits: [7, 8, 17, 18, 27, 28, 37]
+  Row  44: FAIL
+    read H=0x2018060181 L=0x2018060181
+    XOR  H=0x2018060180 L=0x2018060180
+    stuck H bits: [7, 8, 17, 18, 27, 28, 37]
+    stuck L bits: [7, 8, 17, 18, 27, 28, 37]
+  Row  45: FAIL
+    read H=0x2018060181 L=0x2018060181
+    XOR  H=0x2018060180 L=0x2018060180
+    stuck H bits: [7, 8, 17, 18, 27, 28, 37]
+    stuck L bits: [7, 8, 17, 18, 27, 28, 37]
+  Row  46: FAIL
+    read H=0x2018060181 L=0x2018060181
+    XOR  H=0x2018060180 L=0x2018060180
+    stuck H bits: [7, 8, 17, 18, 27, 28, 37]
+    stuck L bits: [7, 8, 17, 18, 27, 28, 37]
+  Row  47: FAIL
+    read H=0x2018060181 L=0x2018060181
+    XOR  H=0x2018060180 L=0x2018060180
+    stuck H bits: [7, 8, 17, 18, 27, 28, 37]
+    stuck L bits: [7, 8, 17, 18, 27, 28, 37]
+  Row  48: FAIL
+    read H=0x2018060181 L=0x2018060181
+    XOR  H=0x2018060180 L=0x2018060180
+    stuck H bits: [7, 8, 17, 18, 27, 28, 37]
+    stuck L bits: [7, 8, 17, 18, 27, 28, 37]
+  Row  49: FAIL
+    read H=0x2018060181 L=0x2018060181
+    XOR  H=0x2018060180 L=0x2018060180
+    stuck H bits: [7, 8, 17, 18, 27, 28, 37]
+    stuck L bits: [7, 8, 17, 18, 27, 28, 37]
+  Row  50: FAIL
+    read H=0x2018060181 L=0x2018060181
+    XOR  H=0x2018060180 L=0x2018060180
+    stuck H bits: [7, 8, 17, 18, 27, 28, 37]
+    stuck L bits: [7, 8, 17, 18, 27, 28, 37]
+  Row  51: FAIL
+    read H=0x2018060181 L=0x2018060181
+    XOR  H=0x2018060180 L=0x2018060180
+    stuck H bits: [7, 8, 17, 18, 27, 28, 37]
+    stuck L bits: [7, 8, 17, 18, 27, 28, 37]
+  Row  52: FAIL
+    read H=0x2018060181 L=0x2018060181
+    XOR  H=0x2018060180 L=0x2018060180
+    stuck H bits: [7, 8, 17, 18, 27, 28, 37]
+    stuck L bits: [7, 8, 17, 18, 27, 28, 37]
+  Row  53: FAIL
+    read H=0x2018060181 L=0x2018060181
+    XOR  H=0x2018060180 L=0x2018060180
+    stuck H bits: [7, 8, 17, 18, 27, 28, 37]
+    stuck L bits: [7, 8, 17, 18, 27, 28, 37]
+  Row  54: FAIL
+    read H=0x2018060181 L=0x2018060181
+    XOR  H=0x2018060180 L=0x2018060180
+    stuck H bits: [7, 8, 17, 18, 27, 28, 37]
+    stuck L bits: [7, 8, 17, 18, 27, 28, 37]
+  Row  55: FAIL
+    read H=0x2018060181 L=0x2018060181
+    XOR  H=0x2018060180 L=0x2018060180
+    stuck H bits: [7, 8, 17, 18, 27, 28, 37]
+    stuck L bits: [7, 8, 17, 18, 27, 28, 37]
+  Row  56: FAIL
+    read H=0x0018060181 L=0x2018060181
+    XOR  H=0x0018060180 L=0x2018060180
+    stuck H bits: [7, 8, 17, 18, 27, 28]
+    stuck L bits: [7, 8, 17, 18, 27, 28, 37]
+  Row  57: FAIL
+    read H=0x2018060181 L=0x2018060181
+    XOR  H=0x2018060180 L=0x2018060180
+    stuck H bits: [7, 8, 17, 18, 27, 28, 37]
+    stuck L bits: [7, 8, 17, 18, 27, 28, 37]
+  Row  58: FAIL
+    read H=0x2018060181 L=0x2018060181
+    XOR  H=0x2018060180 L=0x2018060180
+    stuck H bits: [7, 8, 17, 18, 27, 28, 37]
+    stuck L bits: [7, 8, 17, 18, 27, 28, 37]
+  Row  99: FAIL
+    read H=0x2018060181 L=0x2018060181
+    XOR  H=0x2018060180 L=0x2018060180
+    stuck H bits: [7, 8, 17, 18, 27, 28, 37]
+    stuck L bits: [7, 8, 17, 18, 27, 28, 37]
+
+============================================================
+SCAN COMPLETE: 84 PASS, 18 FAIL out of 102
+============================================================
+
+Failing rows: [2, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 99]
+Row gaps:     [41, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 41]
+All stuck H positions: [7, 8, 17, 18, 27, 28, 37]
+All stuck L positions: [7, 8, 17, 18, 27, 28, 37]
+
+Results saved to re_results/scan_all_rows.json

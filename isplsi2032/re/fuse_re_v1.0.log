@@ -1,0 +1,82 @@
+FT2232H connected.
+Device ID: 0x15
+FLOWTHRU:  0xA5 OK
+============================================================
+DIAGNOSTIC: Speed sensitivity test (row 0)
+============================================================
+  Current MPSSE freq: 100000 Hz
+  Pattern: H=0x0000000001 L=0x0000000001 (nearly all programmed)
+
+--- 100 kHz ---
+  single bit low (FAILED in phase1)
+    wrote H=0x0000000001 L=0x0000000001
+    read  H=0x0000000001 L=0x0000000001  PASS
+  alternating 10/01 (control)
+    wrote H=0x2AAAAAAAAA L=0x1555555555
+    read  H=0x2AAAAAAAAA L=0x1555555555  PASS
+  all programmed
+    wrote H=0x0000000000 L=0x0000000000
+    read  H=0x0000000000 L=0x0000000000  PASS
+  low byte set
+    wrote H=0x00000000FF L=0x00000000FF
+    read  H=0x00000000FF L=0x00000000FF  PASS
+
+--- 50 kHz ---
+  single bit low (FAILED in phase1)
+    wrote H=0x0000000001 L=0x0000000001
+    read  H=0x0000000001 L=0x0000000001  PASS
+  alternating 10/01 (control)
+    wrote H=0x2AAAAAAAAA L=0x1555555555
+    read  H=0x2AAAAAAAAA L=0x1555555555  PASS
+  all programmed
+    wrote H=0x0000000000 L=0x0000000000
+    read  H=0x0000000000 L=0x0000000000  PASS
+  low byte set
+    wrote H=0x00000000FF L=0x00000000FF
+    read  H=0x00000000FF L=0x00000000FF  PASS
+
+--- 20 kHz ---
+  single bit low (FAILED in phase1)
+    wrote H=0x0000000001 L=0x0000000001
+    read  H=0x0000000001 L=0x0000000001  PASS
+  alternating 10/01 (control)
+    wrote H=0x2AAAAAAAAA L=0x1555555555
+    read  H=0x2AAAAAAAAA L=0x1555555555  PASS
+  all programmed
+    wrote H=0x0000000000 L=0x0000000000
+    read  H=0x0000000000 L=0x0000000000  PASS
+  low byte set
+    wrote H=0x00000000FF L=0x00000000FF
+    read  H=0x00000000FF L=0x00000000FF  PASS
+
+--- 10 kHz ---
+  single bit low (FAILED in phase1)
+    wrote H=0x0000000001 L=0x0000000001
+    read  H=0x0000000001 L=0x0000000001  PASS
+  alternating 10/01 (control)
+    wrote H=0x2AAAAAAAAA L=0x1555555555
+    read  H=0x2AAAAAAAAA L=0x1555555555  PASS
+  all programmed
+    wrote H=0x0000000000 L=0x0000000000
+    read  H=0x0000000000 L=0x0000000000  PASS
+  low byte set
+    wrote H=0x00000000FF L=0x00000000FF
+    read  H=0x00000000FF L=0x00000000FF  PASS
+
+--- 5 kHz ---
+  single bit low (FAILED in phase1)
+    wrote H=0x0000000001 L=0x0000000001
+    read  H=0x0000000001 L=0x0000000001  PASS
+  alternating 10/01 (control)
+    wrote H=0x2AAAAAAAAA L=0x1555555555
+    read  H=0x2AAAAAAAAA L=0x1555555555  PASS
+  all programmed
+    wrote H=0x0000000000 L=0x0000000000
+    read  H=0x0000000000 L=0x0000000000  PASS
+  low byte set
+    wrote H=0x00000000FF L=0x00000000FF
+    read  H=0x00000000FF L=0x00000000FF  PASS
+
+============================================================
+DIAGNOSTIC COMPLETE
+============================================================
