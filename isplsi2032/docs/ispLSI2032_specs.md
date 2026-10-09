@@ -252,7 +252,7 @@ When ispEN is high (normal mode): SDI→IN0, SDO→IN1, SCLK→Y2, MODE→NC
 | I/O pins        | 32 + 2 ded.                  | 32            |
 | Clocks          | 3 dedicated (Y0/Y1/Y2)       | 2 (CLK0/CLK1) |
 | VCC             | 5V (original) / 3.3V (V/VL)  | 3.3V          |
-| IR length       | 5 bits                       | 10 bits       |
+| IR length       | 5 bits                       | 6 bits        |
 | ISP             | Legacy serial or IEEE 1532    | IEEE 1532     |
 | Interconnect    | GRP (global)                 | CSM+ISM+OSM   |
 | Technology      | E2CMOS                       | E2CMOS        |

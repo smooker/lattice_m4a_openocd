@@ -313,7 +313,7 @@ openocd -f ../../ft2232h/ft2232h_smooker.cfg \
 |             | ispLSI2032          | M4A3-64/32     |
 |-------------|---------------------|----------------|
 | Macrocells  | 32 (8x4)           | 64 (4x16)      |
-| IR length   | **8 bits** (plain)  | 10 bits        |
+| IR length   | **8 bits** (plain)  | 6 bits         |
 | Blocks      | 8 GLB x 4 MC       | 4 PAL x 16 MC  |
 | GLB inputs  | 18                  | 33             |
 | VCC         | 5V or 3.3V (V/VL)  | 3.3V           |

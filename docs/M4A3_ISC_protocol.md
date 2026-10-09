@@ -8,15 +8,15 @@ for reading, writing, erasing, and verifying the M4A3-64/32 fuse map.
 
 ## ISC Registers
 
-| Register | Width | Instruction | Opcode (10-bit) | Direction |
+| Register | Width | Instruction | Opcode (6-bit) | Direction |
 |----------|-------|-------------|-----------------|-----------|
-| ISC_ADDRESS | 80 bits | ISC_ADDRESS_SHIFT | 0000000011 | write |
-| ISC_DATA | 378 bits | ISC_DATA_SHIFT | 0000000100 | write |
-| ISC_RDATA | 378 bits | ISC_READ | 0000000111 | read |
-| ISC_CONFIG | 5 bits | ISC_ENABLE | 0000001111 | write |
-| ISC_DEFAULT | 1 bit | ISC_PROGRAM | 0000000110 | - |
-| ISC_DEFAULT | 1 bit | ISC_ERASE | 0000000101 | - |
-| ISC_DEFAULT | 1 bit | ISC_DISABLE | 1111111111 | - |
+| ISC_ADDRESS | 80 bits | ISC_ADDRESS_SHIFT | 000011 | write |
+| ISC_DATA | 378 bits | ISC_DATA_SHIFT | 000100 | write |
+| ISC_RDATA | 378 bits | ISC_READ | 000111 | read |
+| ISC_CONFIG | 5 bits | ISC_ENABLE | 001111 | write |
+| ISC_DEFAULT | 1 bit | ISC_PROGRAM | 000110 | - |
+| ISC_DEFAULT | 1 bit | ISC_ERASE | 000101 | - |
+| ISC_DEFAULT | 1 bit | ISC_DISABLE | 111111 | - |
 
 ---
 
@@ -231,7 +231,7 @@ one fuse per macrocell or one fuse per product term in the physical layout.
 | Constant | Value | Notes |
 |----------|-------|-------|
 | JTAG ID | 0x17486157 | ID code mask: 0x0FFFFFFF |
-| IR length | 10 bits | |
+| IR length | 6 bits | |
 | Address register | 80 bits | Walking-1, MSB first |
 | Data register | 378 bits | = 384 - 6 |
 | Config register | 5 bits | Mode 8=normal ISC, 9=config row |

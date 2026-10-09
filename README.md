@@ -2,10 +2,15 @@
 
 Programming Lattice M4A3-64/32 CPLD via OpenOCD and FTDI FT2232H.
 
+> Part of the **cpld** umbrella repo (private, git.smooker.org), which holds the
+> overview of all our Lattice CPLD work, the ispLEVER projects, the 1996 Data
+> Book and the predecessor `lattice_m4a3_svf`; this repo is a submodule there.
+> Redmine: https://rm.smooker.org/projects/cpld/wiki
+
 ## Hardware
 
 - **CPLD**: Lattice ispMACH M4A3-64/32, 44-pin TQFP, 3.3V
-- **JTAG ID**: `0x17486157`, IR length: 10 bits
+- **JTAG ID**: `0x17486157`, IR length: 6 bits
 - **Programmer**: FTDI FT2232H, VID/PID `0403:6010`, **+5V tolerant I/O**
 
 ### JTAG Wiring (FT2232H → CPLD)
@@ -56,7 +61,7 @@ Expected output should show JTAG tap with ID `0x17486157`.
 ```bash
 openocd -f ./ft2232h/ft2232h_smooker.cfg \
     -c "adapter speed 2000; transport select jtag" \
-    -c "jtag newtap auto0 tap -irlen 10 -expected-id 0x17486157" \
+    -c "jtag newtap auto0 tap -irlen 6 -expected-id 0x17486157" \
     -c "init" \
     -c "svf your_design.svf" \
     -c "shutdown"

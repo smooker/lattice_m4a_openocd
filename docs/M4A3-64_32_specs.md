@@ -19,7 +19,7 @@ Extracted from `M4A5-64_32-6JC.pdf` (MACH 4 Family datasheet, Lattice/Vantis).
 | ISP | Yes, IEEE 1532 via JTAG |
 | Boundary Scan | IEEE 1149.1 |
 | JTAG ID | `0x17486157` |
-| IR length | 10 bits |
+| IR length | 6 bits |
 
 ---
 

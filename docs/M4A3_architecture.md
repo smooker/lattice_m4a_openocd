@@ -167,12 +167,12 @@ For each product term row:
 
 ### JTAG ISC Instructions (from BSDL)
 
-| Instruction | Opcode (10-bit) | Function |
+| Instruction | Opcode (6-bit) | Function |
 |-------------|-----------------|----------|
-| BYPASS | 1111111111 | Standard bypass |
-| EXTEST | 0000000000 | Boundary scan external test |
-| SAMPLE | 0000000010 | Boundary scan sample |
-| IDCODE | 0000000001 | Read 32-bit device ID |
+| BYPASS | 111111 | Standard bypass |
+| EXTEST | 000000 | Boundary scan external test |
+| SAMPLE | 000010 | Boundary scan sample |
+| IDCODE | 000001 | Read 32-bit device ID |
 | PRIV003 | — | Access ROWREG[80] |
 | PRIV004 | — | Access COLREG[378] (read?) |
 | PRIV007 | — | Access COLREG[378] (write?) |
@@ -215,7 +215,7 @@ fuses control which feature.
 | Feature | M4 (Vantis legacy) | M4A3 (Lattice advanced) |
 |---------|--------------------|-----------------------|
 | VCC | 5.0V | 3.3V |
-| IR length | 6 bits | 10 bits |
+| IR length | 6 bits | 6 bits |
 | ISP (In-System Programming) | No | Yes (IEEE 1532) |
 | Speed grades | 7.5-18 ns | 5-12 ns |
 | JTAG standard | IEEE 1149.1 only | IEEE 1149.1 + 1532 |
